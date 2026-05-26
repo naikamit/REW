@@ -557,6 +557,19 @@ body{
   .canvas-card{min-height:300px;}
 }
 
+/* ── PEQ TABLE ── */
+.peq-note{font-size:13px;color:var(--on-surface-variant);line-height:1.5;}
+.peq-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface-container);border-radius:10px;overflow:hidden;}
+.peq-table th{text-align:left;font-size:11px;font-weight:500;color:var(--on-surface-variant);padding:8px 12px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--outline-variant);}
+.peq-table td{padding:10px 12px;border-bottom:1px solid var(--outline-variant);}
+.peq-table tr:last-child td{border-bottom:none;}
+.peq-hz{font-weight:500;color:var(--on-surface);}
+.peq-gain{font-weight:600;}
+.peq-boost{color:var(--primary);}
+.peq-cut{color:var(--error);}
+.peq-q{color:var(--on-surface-variant);}
+.peq-type{color:var(--on-surface-variant);font-size:11px;}
+
 .hidden{display:none!important;}
 </style>
 </head>
@@ -678,7 +691,7 @@ body{
 <div id="screen-result-freq" class="screen">
   <div class="top-app-bar">
     <div class="top-app-bar-title">Frequency Response</div>
-    <div class="step-chip">1 of 2</div>
+    <div class="step-chip">1 of 3</div>
   </div>
 
   <div class="screen-body">
@@ -704,7 +717,7 @@ body{
   <div class="top-app-bar">
     <button class="back-btn" id="btn-rt60-back">←</button>
     <div class="top-app-bar-title">Decay Time · RT60</div>
-    <div class="step-chip">2 of 2</div>
+    <div class="step-chip">2 of 3</div>
   </div>
 
   <div class="screen-body">
@@ -719,6 +732,34 @@ body{
   <div class="bottom-bar">
     <button class="btn-text" id="btn-export-rt60-png">↓ PNG</button>
     <button class="btn-text" id="btn-export-csv">↓ CSV</button>
+    <div class="bottom-bar-spacer"></div>
+    <button class="btn-filled" id="btn-goto-correction">Correction →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 6 — ROOM CORRECTION
+════════════════════════════════════ -->
+<div id="screen-result-correction" class="screen">
+  <div class="top-app-bar">
+    <button class="back-btn" id="btn-corr-back">←</button>
+    <div class="top-app-bar-title">Room Correction</div>
+    <div class="step-chip">3 of 3</div>
+  </div>
+
+  <div class="screen-body">
+    <div class="canvas-card" id="corr-canvas-card" style="min-height:220px;">
+      <canvas id="corr-canvas"></canvas>
+    </div>
+
+    <div class="section-header">Parametric EQ · corrections below 120 Hz</div>
+    <div class="peq-note">Enter these into your EQ plugin, DSP processor, or receiver. Cuts are safe to apply as-is; boost gently to taste.</div>
+    <div id="peq-list"></div>
+    <button class="btn-outlined" id="btn-copy-peq" style="align-self:flex-start;margin-top:4px;">Copy to Clipboard</button>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn-text" id="btn-export-corr-png">↓ PNG</button>
     <div class="bottom-bar-spacer"></div>
     <button class="btn-filled" id="btn-redo">↺ Measure Again</button>
   </div>
@@ -806,6 +847,9 @@ function showScreen(id){
   }
   if(id==='result-rt60'){
     setTimeout(()=>{drawRT60();generateRT60Insights();},80);
+  }
+  if(id==='result-correction'){
+    setTimeout(()=>{drawCorrectionChart();generatePEQList();},80);
   }
   if(id==='capture'){
     const cc=document.getElementById('capture-canvas');
@@ -1556,6 +1600,185 @@ document.getElementById('btn-export-csv').addEventListener('click',()=>{
 });
 
 // ═══════════════════════════════════════════════
+//  ROOM CORRECTION DSP
+// ═══════════════════════════════════════════════
+const CORR_LIMIT = 120; // Hz — correction applied only below this
+const CORR_TAPER = 85;  // Hz — start fading correction out at this frequency
+
+function corrRefDB(sm){
+  const vals=BANDS.map((f,i)=>({f,v:sm[i]})).filter(b=>b.f>=300&&b.f<=2000).map(b=>b.v).sort((a,b)=>a-b);
+  return vals[Math.floor(vals.length/2)]||DB_MIN;
+}
+
+function computeCorrection(sm,refDB){
+  const raw=BANDS.map((hz,i)=>{
+    if(hz>CORR_LIMIT) return 0;
+    let c=(refDB+harmanAt(hz))-sm[i];
+    c=Math.max(-15,Math.min(6,c));
+    if(hz>CORR_TAPER) c*=(CORR_LIMIT-hz)/(CORR_LIMIT-CORR_TAPER);
+    return c;
+  });
+  return smooth(raw,6);
+}
+
+function computePEQBands(sm,refDB){
+  const corr=computeCorrection(sm,refDB);
+
+  // Find local extrema with |correction| > 1.5 dB
+  const peaks=[];
+  for(let i=4;i<NUM_BANDS-4;i++){
+    if(BANDS[i]>CORR_LIMIT) break;
+    const v=corr[i];
+    if(Math.abs(v)<1.5) continue;
+    const pos=v>0;
+    const ex=pos
+      ?(v>=corr[i-1]&&v>=corr[i+1]&&v>=corr[i-2]&&v>=corr[i+2]&&v>=corr[i-3]&&v>=corr[i+3])
+      :(v<=corr[i-1]&&v<=corr[i+1]&&v<=corr[i-2]&&v<=corr[i+2]&&v<=corr[i-3]&&v<=corr[i+3]);
+    if(ex) peaks.push({idx:i,hz:BANDS[i],gain:v});
+  }
+
+  // Sort by magnitude, keep top 6
+  peaks.sort((a,b)=>Math.abs(b.gain)-Math.abs(a.gain));
+  const top=peaks.slice(0,6);
+
+  return top.map(({idx,hz,gain})=>{
+    const half=gain/2, sign=gain>0?1:-1;
+    let lo=idx,hi=idx;
+    while(lo>0&&sign*corr[lo]>=sign*half) lo--;
+    while(hi<NUM_BANDS&&BANDS[hi]<=CORR_LIMIT&&sign*corr[hi]>=sign*half) hi++;
+    const bw=BANDS[Math.min(hi,NUM_BANDS)]-BANDS[Math.max(lo,0)];
+    const q=bw>0?Math.round(Math.max(0.5,Math.min(10,hz/bw))*10)/10:3.0;
+    return{hz:Math.round(hz),gain:Math.round(gain*10)/10,q};
+  }).sort((a,b)=>a.hz-b.hz);
+}
+
+// ─── Correction Chart ───
+const corrCanvas=document.getElementById('corr-canvas');
+const corrCtx=corrCanvas.getContext('2d');
+let peqBands=null;
+
+function drawCorrectionChart(){
+  const card=document.getElementById('corr-canvas-card');
+  corrCanvas.width=card.clientWidth; corrCanvas.height=card.clientHeight;
+  if(!smoothedFreqCurve) return;
+  const sm=smoothedFreqCurve;
+  drawGrid(corrCtx,corrCanvas);
+  const{GW,GH}=G(corrCanvas);
+  const refDB=corrRefDB(sm);
+
+  // Harman target (dashed amber)
+  corrCtx.save();
+  corrCtx.beginPath(); corrCtx.rect(PAD.l,PAD.t,GW,GH); corrCtx.clip();
+  corrCtx.setLineDash([7,5]);
+  corrCtx.strokeStyle='rgba(120,80,0,0.35)'; corrCtx.lineWidth=1.5;
+  corrCtx.beginPath();
+  BANDS.forEach((f,i)=>{
+    if(i>NUM_BANDS) return;
+    const db=refDB+harmanAt(f);
+    const x=PAD.l+fToX(f,GW);
+    const y=PAD.t+GH-((Math.max(DB_MIN,Math.min(DB_MAX,db))-DB_MIN)/(DB_MAX-DB_MIN))*GH;
+    if(i===0) corrCtx.moveTo(x,y); else corrCtx.lineTo(x,y);
+  });
+  corrCtx.stroke(); corrCtx.setLineDash([]); corrCtx.restore();
+
+  // Measured (gray, thin)
+  drawCurve(corrCtx,corrCanvas,Array.from(sm),'#8A9B9A',0.04,1.5);
+
+  // Predicted = measured + correction
+  const corr=computeCorrection(sm,refDB);
+  const predicted=Array.from(sm).map((v,i)=>v+corr[i]);
+  drawCurve(corrCtx,corrCanvas,predicted,'#006B63',0.20,2.5);
+
+  // 120 Hz marker
+  corrCtx.save();
+  corrCtx.beginPath(); corrCtx.rect(PAD.l,PAD.t,GW,GH); corrCtx.clip();
+  const x120=PAD.l+fToX(CORR_LIMIT,GW);
+  corrCtx.strokeStyle='rgba(186,26,26,0.35)'; corrCtx.lineWidth=1;
+  corrCtx.setLineDash([4,3]);
+  corrCtx.beginPath(); corrCtx.moveTo(x120,PAD.t); corrCtx.lineTo(x120,PAD.t+GH); corrCtx.stroke();
+  corrCtx.setLineDash([]);
+  corrCtx.font='10px Roboto,sans-serif'; corrCtx.fillStyle='rgba(186,26,26,0.5)';
+  corrCtx.textAlign='left'; corrCtx.fillText('120 Hz',x120+3,PAD.t+12);
+  corrCtx.restore();
+
+  // Legend
+  corrCtx.save();
+  corrCtx.fillStyle='rgba(255,255,255,0.92)';
+  corrCtx.beginPath(); corrCtx.roundRect(PAD.l+6,PAD.t+6,155,52,5); corrCtx.fill();
+  corrCtx.font='11px Roboto,sans-serif'; corrCtx.textAlign='left';
+  corrCtx.strokeStyle='rgba(120,80,0,0.55)'; corrCtx.lineWidth=1.5; corrCtx.setLineDash([5,4]);
+  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+17); corrCtx.lineTo(PAD.l+26,PAD.t+17); corrCtx.stroke();
+  corrCtx.setLineDash([]);
+  corrCtx.fillStyle='#6F7978'; corrCtx.fillText('Harman target',PAD.l+30,PAD.t+20);
+  corrCtx.strokeStyle='#8A9B9A'; corrCtx.lineWidth=1.5;
+  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+32); corrCtx.lineTo(PAD.l+26,PAD.t+32); corrCtx.stroke();
+  corrCtx.fillStyle='#6F7978'; corrCtx.fillText('Measured',PAD.l+30,PAD.t+35);
+  corrCtx.strokeStyle='#006B63'; corrCtx.lineWidth=2.5;
+  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+46); corrCtx.lineTo(PAD.l+26,PAD.t+46); corrCtx.stroke();
+  corrCtx.fillStyle='#3F4948'; corrCtx.fillText('Predicted',PAD.l+30,PAD.t+49);
+  corrCtx.restore();
+}
+
+function generatePEQList(){
+  const container=document.getElementById('peq-list');
+  container.innerHTML='';
+  if(!smoothedFreqCurve) return;
+  const refDB=corrRefDB(smoothedFreqCurve);
+  peqBands=computePEQBands(smoothedFreqCurve,refDB);
+  if(peqBands.length===0){
+    container.innerHTML='<div class="peq-note">No significant corrections needed below 120 Hz.</div>';
+    return;
+  }
+  const tbl=document.createElement('table');
+  tbl.className='peq-table';
+  tbl.innerHTML='<thead><tr><th>Freq</th><th>Gain</th><th>Q</th><th>Type</th></tr></thead>';
+  const tb=document.createElement('tbody');
+  peqBands.forEach(({hz,gain,q})=>{
+    const tr=document.createElement('tr');
+    const gc=gain>=0?'peq-boost':'peq-cut';
+    const gs=(gain>=0?'+':'')+gain+' dB';
+    tr.innerHTML=`<td class="peq-hz">${hz} Hz</td><td class="peq-gain ${gc}">${gs}</td><td class="peq-q">${q}</td><td class="peq-type">Peak</td>`;
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb);
+  container.appendChild(tbl);
+}
+
+// Navigation
+document.getElementById('btn-goto-correction').addEventListener('click',()=>{
+  showScreen('result-correction');
+});
+document.getElementById('btn-corr-back').addEventListener('click',()=>{
+  showScreen('result-rt60');
+});
+
+// Copy PEQ to clipboard
+document.getElementById('btn-copy-peq').addEventListener('click',()=>{
+  if(!peqBands||peqBands.length===0) return;
+  const lines=['Room Correction PEQ (Harman target, ≤120 Hz)',''];
+  peqBands.forEach((b,i)=>{
+    const g=(b.gain>=0?'+':'')+b.gain;
+    lines.push(`Band ${i+1}:  ${b.hz} Hz  ${g} dB  Q ${b.q}  Peak`);
+  });
+  const text=lines.join('\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('btn-copy-peq');
+    const orig=btn.textContent;
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent=orig,2000);
+  }).catch(()=>alert(text));
+});
+
+// Export correction chart PNG
+document.getElementById('btn-export-corr-png').addEventListener('click',()=>{
+  if(!smoothedFreqCurve) return;
+  const a=document.createElement('a');
+  a.download=`room-correction-${Date.now()}.png`;
+  a.href=corrCanvas.toDataURL('image/png');
+  a.click();
+});
+
+// ═══════════════════════════════════════════════
 //  WINDOW RESIZE
 // ═══════════════════════════════════════════════
 window.addEventListener('resize',()=>{
@@ -1567,6 +1790,9 @@ window.addEventListener('resize',()=>{
   }
   if(currentScreen==='result-rt60'){
     drawRT60();
+  }
+  if(currentScreen==='result-correction'){
+    drawCorrectionChart();
   }
   if(currentScreen==='capture'){
     const cc=document.getElementById('capture-canvas');
