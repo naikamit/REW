@@ -556,7 +556,7 @@ body{
     <div class="hero-section">
       <div class="hero-icon">🎙</div>
       <div class="hero-title">Room Analyzer</div>
-      <div class="hero-subtitle">Measure frequency response, decay time, and waterfall in your listening space</div>
+      <div class="hero-subtitle">Measure frequency response and decay time in your listening space</div>
     </div>
 
     <!-- Mic check card -->
@@ -663,7 +663,7 @@ body{
 <div id="screen-result-freq" class="screen">
   <div class="top-app-bar">
     <div class="top-app-bar-title">Frequency Response</div>
-    <div class="step-chip">1 of 3</div>
+    <div class="step-chip">1 of 2</div>
   </div>
 
   <div class="screen-body">
@@ -689,7 +689,7 @@ body{
   <div class="top-app-bar">
     <button class="back-btn" id="btn-rt60-back">←</button>
     <div class="top-app-bar-title">Decay Time · RT60</div>
-    <div class="step-chip">2 of 3</div>
+    <div class="step-chip">2 of 2</div>
   </div>
 
   <div class="screen-body">
@@ -703,33 +703,7 @@ body{
 
   <div class="bottom-bar">
     <button class="btn-text" id="btn-export-rt60-png">↓ PNG</button>
-    <div class="bottom-bar-spacer"></div>
-    <button class="btn-filled" id="btn-goto-waterfall">Waterfall →</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════
-     SCREEN 6 — RESULT: WATERFALL
-════════════════════════════════════ -->
-<div id="screen-result-waterfall" class="screen">
-  <div class="top-app-bar">
-    <button class="back-btn" id="btn-wf-back">←</button>
-    <div class="top-app-bar-title">Waterfall · CSD</div>
-    <div class="step-chip">3 of 3</div>
-  </div>
-
-  <div class="screen-body">
-    <div class="canvas-card" id="wf-canvas-card" style="min-height:220px;">
-      <canvas id="wf-canvas"></canvas>
-    </div>
-    <div class="wf-caption">Shows energy decay over 500 ms · bright = energy still present</div>
-    <div class="section-header">Insights</div>
-    <div class="insights" id="wf-insights"></div>
-  </div>
-
-  <div class="bottom-bar">
-    <button class="btn-text" id="btn-export-wf-csv">↓ CSV</button>
-    <button class="btn-text" id="btn-export-wf-png">↓ PNG</button>
+    <button class="btn-text" id="btn-export-csv">↓ CSV</button>
     <div class="bottom-bar-spacer"></div>
     <button class="btn-filled" id="btn-redo">↺ Measure Again</button>
   </div>
@@ -775,7 +749,6 @@ let rafCapture = null;
 
 let freqCurve    = null;
 let rt60Values   = null;
-let waterfallData = null;
 
 // ═══════════════════════════════════════════════
 //  SCREEN MANAGEMENT
@@ -794,13 +767,6 @@ function showScreen(id){
     cvs.height = card.clientHeight;
     drawFreqResponse();
     generateFreqInsights(freqCurve);
-  }
-  if(id==='result-waterfall'){
-    const card = document.getElementById('wf-canvas-card');
-    const cvs  = document.getElementById('wf-canvas');
-    cvs.width  = card.clientWidth;
-    cvs.height = card.clientHeight;
-    setTimeout(()=>{drawWaterfall();generateWaterfallInsights();},80);
   }
   if(id==='result-rt60'){
     setTimeout(()=>{drawRT60();generateRT60Insights();},80);
@@ -951,9 +917,8 @@ async function startMeasurement(){
       decoded = await ac.decodeAudioData(arrBuf);
     } catch(e) {
       console.warn('decodeAudioData failed:', e);
-      freqCurve     = new Float32Array(NUM_BANDS+1).fill(DB_MIN);
-      rt60Values    = RT60_BANDS.map(hz=>({hz,t60:0.4,color:'green'}));
-      waterfallData = buildDummyWaterfall();
+      freqCurve  = new Float32Array(NUM_BANDS+1).fill(DB_MIN);
+      rt60Values = RT60_BANDS.map(hz=>({hz,t60:0.4,color:'green'}));
       showScreen('result-freq');
       return;
     }
@@ -991,11 +956,6 @@ async function startMeasurement(){
     document.getElementById('proc-step').textContent='Measuring RT60…';
     await new Promise(r=>setTimeout(r,80));
     rt60Values = computeRT60(avgIR, sr);
-
-    document.getElementById('proc-progress').style.width='90%';
-    document.getElementById('proc-step').textContent='Building waterfall…';
-    await new Promise(r=>setTimeout(r,80));
-    waterfallData = computeWaterfall(avgIR, sr);
 
     document.getElementById('proc-progress').style.width='100%';
     document.getElementById('proc-step').textContent='Done.';
@@ -1147,43 +1107,6 @@ function bandpassFilter(buf, sr, f_lo, f_hi){
   return out;
 }
 
-function computeWaterfall(ir, sr){
-  // STFT: windows each ~10ms apart, showing first 500ms
-  const windowMs   = 40;   // ms per window
-  const stepMs     = 8;    // ms per step
-  const numSteps   = Math.ceil(500/stepMs);
-  const winSamples = Math.ceil(windowMs/1000*sr);
-  const stepSamples= Math.ceil(stepMs/1000*sr);
-  const wf = [];
-  for(let s=0;s<numSteps;s++){
-    const offset = s*stepSamples;
-    const row    = new Float32Array(NUM_BANDS+1);
-    for(let bi=0;bi<=NUM_BANDS;bi++){
-      if(BANDS[bi]>8000){row[bi]=DB_MIN;continue;}
-      const db = goertzelDB(ir.slice(offset, offset+winSamples), BANDS[bi], sr);
-      row[bi]  = db;
-    }
-    wf.push(row);
-  }
-  // Normalize
-  let wfMax = -Infinity;
-  wf.forEach(r=>r.forEach(v=>{if(v>wfMax)wfMax=v;}));
-  wf.forEach(r=>{for(let i=0;i<r.length;i++) r[i]=Math.max(DB_MIN,r[i]-wfMax+DB_MAX-5);});
-  return wf;
-}
-
-function buildDummyWaterfall(){
-  const numSteps=60; const wf=[];
-  for(let s=0;s<numSteps;s++){
-    const row=new Float32Array(NUM_BANDS+1);
-    for(let bi=0;bi<=NUM_BANDS;bi++){
-      const decay = s/numSteps;
-      row[bi]=DB_MAX - decay*60 - Math.random()*5;
-    }
-    wf.push(row);
-  }
-  return wf;
-}
 
 // ═══════════════════════════════════════════════
 //  LIVE CAPTURE ANIMATION
@@ -1228,7 +1151,7 @@ function drawLiveCapture(){
 // ═══════════════════════════════════════════════
 //  RESULTS DRAWING
 // ═══════════════════════════════════════════════
-const PAD={l:38,r:8,t:14,b:28};
+const PAD={l:46,r:8,t:14,b:32};
 
 function G(canvas){
   const W=canvas.width, H=canvas.height;
@@ -1243,17 +1166,17 @@ function drawGrid(ctx,canvas){
     if(y<PAD.t||y>PAD.t+GH) return;
     ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(PAD.l+GW,y); ctx.stroke();
-    ctx.fillStyle='#889392'; ctx.font='11px Roboto,sans-serif';
-    ctx.textAlign='right'; ctx.fillText(db,PAD.l-3,y+4);
+    ctx.fillStyle='#BEC9C8'; ctx.font='bold 13px Roboto,sans-serif';
+    ctx.textAlign='right'; ctx.fillText(db,PAD.l-5,y+5);
   });
   OCT_LABELS.forEach(({hz,l})=>{
     const x=PAD.l+fToX(hz,GW);
     const maj=hz===100||hz===1000||hz===10000;
     ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=maj?1:0.5;
     ctx.beginPath(); ctx.moveTo(x,PAD.t); ctx.lineTo(x,PAD.t+GH); ctx.stroke();
-    ctx.fillStyle='#889392';
-    ctx.font=`${maj?11:10}px Roboto,sans-serif`; ctx.textAlign='center';
-    ctx.fillText(l,x,PAD.t+GH+16);
+    ctx.fillStyle= maj ? '#E0E3E3' : '#889392';
+    ctx.font=`${maj?'bold 13':'12'}px Roboto,sans-serif`; ctx.textAlign='center';
+    ctx.fillText(l,x,PAD.t+GH+20);
   });
   ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
   ctx.strokeRect(PAD.l,PAD.t,GW,GH);
@@ -1326,56 +1249,6 @@ function drawFreqResponse(){
   freqCtx.fillStyle='#BEC9C8'; freqCtx.fillText('1/3 oct smoothed',PAD.l+28,PAD.t+31);
 }
 
-// ─── Waterfall ───
-const wfCanvas = document.getElementById('wf-canvas');
-const wfCtx    = wfCanvas.getContext('2d');
-
-function drawWaterfall(){
-  const card = document.getElementById('wf-canvas-card');
-  wfCanvas.width  = card.clientWidth;
-  wfCanvas.height = card.clientHeight;
-  if(!waterfallData||!waterfallData.length) return;
-  const W=wfCanvas.width, H=wfCanvas.height;
-  wfCtx.fillStyle='#0D1117'; wfCtx.fillRect(0,0,W,H);
-
-  const GW=W-PAD.l-PAD.r, GH=H-PAD.t-PAD.b;
-  const numSteps=waterfallData.length;
-  const stepH=GH/numSteps;
-  const maxHz=4000;
-
-  waterfallData.forEach((row,si)=>{
-    const y=PAD.t + si*stepH;
-    for(let bi=0;bi<=NUM_BANDS;bi++){
-      if(BANDS[bi]>maxHz) break;
-      const x0=PAD.l+fToX(BANDS[bi],GW*(Math.log10(maxHz/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ)));
-      const x1=bi<NUM_BANDS?PAD.l+fToX(BANDS[bi+1],GW*(Math.log10(maxHz/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ))):PAD.l+GW;
-      const db=row[bi];
-      const t=(db-DB_MIN)/(DB_MAX-DB_MIN);
-      wfCtx.fillStyle=`rgb(${Math.round(t*0)},${Math.round(t*180)},${Math.round(t*200)})`;
-      wfCtx.fillRect(x0, y, Math.max(1,x1-x0), Math.ceil(stepH)+1);
-    }
-  });
-
-  // Axes
-  wfCtx.strokeStyle='rgba(255,255,255,0.07)'; wfCtx.lineWidth=1;
-  wfCtx.strokeRect(PAD.l,PAD.t,GW,GH);
-  // Time axis labels
-  const timeLabels=[0,100,200,300,400,500];
-  timeLabels.forEach(ms=>{
-    const y=PAD.t+GH*(ms/500);
-    wfCtx.fillStyle='#889392'; wfCtx.font='10px Roboto,sans-serif';
-    wfCtx.textAlign='right'; wfCtx.fillText(ms+'ms',PAD.l-4,y+4);
-  });
-  // Freq axis (bottom)
-  [20,50,100,200,500,1000,2000,4000].forEach(hz=>{
-    if(hz>maxHz) return;
-    const frac=Math.log10(hz/MIN_HZ)/Math.log10(maxHz/MIN_HZ);
-    const x=PAD.l+frac*GW*(Math.log10(maxHz/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ));
-    wfCtx.fillStyle='#889392'; wfCtx.font='10px Roboto,sans-serif';
-    wfCtx.textAlign='center';
-    wfCtx.fillText(hz>=1000?hz/1000+'k':hz+'',x,PAD.t+GH+16);
-  });
-}
 
 // ─── RT60 ───
 function drawRT60(){
@@ -1482,32 +1355,6 @@ function generateRT60Insights(){
   });
 }
 
-function generateWaterfallInsights(){
-  const container=document.getElementById('wf-insights');
-  container.innerHTML='';
-  if(!waterfallData) return;
-  const cards=[];
-  const band63 = Math.round(Math.log10(63/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ)*NUM_BANDS);
-  const first63 = waterfallData[0][band63];
-  let decay63 = waterfallData.length;
-  for(let s=0;s<waterfallData.length;s++){
-    if(waterfallData[s][band63] < first63-20){decay63=s;break;}
-  }
-  const decayMs63 = decay63*(500/waterfallData.length);
-  if(decayMs63>350){
-    cards.push({level:'red',title:'Slow Bass Decay',body:`63Hz takes ~${Math.round(decayMs63)}ms to decay 20dB. Heavy bass trapping needed to clean up the low end.`});
-  } else if(decayMs63>200){
-    cards.push({level:'yellow',title:'Bass Decay',body:`63Hz decays in ~${Math.round(decayMs63)}ms. Moderate. Corner bass traps would improve tightness.`});
-  } else {
-    cards.push({level:'green',title:'Bass Decay',body:`63Hz decays quickly (~${Math.round(decayMs63)}ms). Bass energy is well controlled.`});
-  }
-  cards.forEach(c=>{
-    const div=document.createElement('div');
-    div.className=`insight-card ${c.level}`;
-    div.innerHTML=`<div class="insight-title">${c.title}</div><div class="insight-body">${c.body}</div>`;
-    container.appendChild(div);
-  });
-}
 
 // ═══════════════════════════════════════════════
 //  NAVIGATION
@@ -1516,20 +1363,12 @@ document.getElementById('btn-goto-rt60').addEventListener('click',()=>{
   showScreen('result-rt60');
 });
 
-document.getElementById('btn-goto-waterfall').addEventListener('click',()=>{
-  showScreen('result-waterfall');
-});
-
 document.getElementById('btn-rt60-back').addEventListener('click',()=>{
   showScreen('result-freq');
 });
 
-document.getElementById('btn-wf-back').addEventListener('click',()=>{
-  showScreen('result-rt60');
-});
-
 document.getElementById('btn-redo').addEventListener('click',()=>{
-  freqCurve=null; rt60Values=null; waterfallData=null;
+  freqCurve=null; rt60Values=null;
   if(micStream) micStream.getTracks().forEach(t=>t.stop());
   micStream=null; analyser=null; micSource=null;
   if(audioCtx){audioCtx.close();audioCtx=null;}
@@ -1581,15 +1420,7 @@ document.getElementById('btn-export-rt60-png').addEventListener('click',()=>{
   a.click();
 });
 
-document.getElementById('btn-export-wf-png').addEventListener('click',()=>{
-  if(!waterfallData) return;
-  const a=document.createElement('a');
-  a.download=`room-waterfall-${Date.now()}.png`;
-  a.href=wfCanvas.toDataURL('image/png');
-  a.click();
-});
-
-document.getElementById('btn-export-wf-csv').addEventListener('click',()=>{
+document.getElementById('btn-export-csv').addEventListener('click',()=>{
   if(!freqCurve) return;
   let csv='frequency_hz,magnitude_db\n';
   freqCurve.forEach((db,i)=>{
@@ -1614,12 +1445,6 @@ window.addEventListener('resize',()=>{
     freqCanvas.width=card.clientWidth;
     freqCanvas.height=card.clientHeight;
     drawFreqResponse();
-  }
-  if(currentScreen==='result-waterfall'){
-    const card=document.getElementById('wf-canvas-card');
-    wfCanvas.width=card.clientWidth;
-    wfCanvas.height=card.clientHeight;
-    drawWaterfall();
   }
   if(currentScreen==='result-rt60'){
     drawRT60();
