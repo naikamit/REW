@@ -1622,34 +1622,62 @@ function computeCorrection(sm,refDB){
 }
 
 function computePEQBands(sm,refDB){
-  // Extra-smooth the correction before analysis so micro-fluctuations
-  // (which are especially dense at low frequencies where log-spaced bands
-  // are only fractions of a Hz apart) don't create phantom peaks.
   const corr=smooth(Array.from(computeCorrection(sm,refDB)),12);
 
-  // Fixed ISO 1/3-octave grid starting at 40 Hz.
-  // Sub-bass below 40 Hz is excluded: most speakers can't reproduce it and
-  // the Harman bass-rise there would suggest useless max-boost everywhere.
-  const GRID=[40,50,63,80,100];
-
-  return GRID.map(fc=>{
-    // Find the BANDS index closest (in log scale) to fc
+  function nearestIdx(fc){
     let best=0,bd=Infinity;
     BANDS.forEach((f,i)=>{const d=Math.abs(Math.log2(f/fc));if(d<bd){bd=d;best=i;}});
-
-    const gain=Math.round(corr[best]*10)/10;
-    if(Math.abs(gain)<1.5) return null; // not worth applying
-
-    // Estimate Q: walk left/right until correction crosses its half-amplitude
+    return best;
+  }
+  function qAt(idx,fc){
+    const gain=corr[idx];
+    if(gain===0) return 3.0;
     const half=gain/2, sign=gain>0?1:-1;
-    let lo=best,hi=best;
+    let lo=idx,hi=idx;
     while(lo>0&&sign*corr[lo]>=sign*half) lo--;
     while(hi<NUM_BANDS&&BANDS[hi]<=CORR_LIMIT&&sign*corr[hi]>=sign*half) hi++;
     const bw=BANDS[Math.min(hi,NUM_BANDS)]-BANDS[Math.max(lo,0)];
-    const q=bw>0?Math.round(Math.max(0.7,Math.min(8,fc/bw))*10)/10:3.0;
+    return bw>0?Math.round(Math.max(0.7,Math.min(8,fc/bw))*10)/10:3.0;
+  }
 
-    return{hz:fc,gain,q};
-  }).filter(Boolean);
+  // Sample at ISO 1/3-oct grid
+  const GRID=[40,50,63,80,100];
+  const pts=GRID.map(fc=>{
+    const idx=nearestIdx(fc);
+    return{fc,idx,gain:Math.round(corr[idx]*10)/10};
+  });
+
+  const bands=[];
+  const coveredByShelf=new Set();
+
+  // ── Low Shelf decision ──────────────────────────────────────────────────
+  // If at least 2 of the three lowest ISO points (40/50/63 Hz) all need
+  // correction in the same direction and within 2.5 dB of each other,
+  // a single Low Shelf at 80 Hz replaces them more naturally than peaks.
+  const low3=pts.filter(p=>p.fc<=63&&Math.abs(p.gain)>=1.5);
+  if(low3.length>=2){
+    const allPos=low3.every(p=>p.gain>0), allNeg=low3.every(p=>p.gain<0);
+    if(allPos||allNeg){
+      const g=low3.map(p=>p.gain);
+      const avg=g.reduce((a,b)=>a+b,0)/g.length;
+      const spread=Math.max(...g.map(v=>Math.abs(v-avg)));
+      if(spread<=2.5){
+        const shelfGain=Math.round(avg*10)/10;
+        // Q 0.7 = standard Butterworth shelf slope (≈ S=0.9 in some EQs)
+        bands.push({hz:80,gain:shelfGain,q:0.7,type:'Low Shelf'});
+        low3.forEach(p=>coveredByShelf.add(p.fc));
+      }
+    }
+  }
+
+  // ── Peak filters for the remaining significant points ───────────────────
+  pts.forEach(({fc,idx,gain})=>{
+    if(coveredByShelf.has(fc)) return;
+    if(Math.abs(gain)<1.5) return;
+    bands.push({hz:fc,gain,q:qAt(idx,fc),type:'Peak'});
+  });
+
+  return bands.sort((a,b)=>a.hz-b.hz);
 }
 
 // ─── Correction Chart ───
@@ -1731,13 +1759,14 @@ function generatePEQList(){
   }
   const tbl=document.createElement('table');
   tbl.className='peq-table';
-  tbl.innerHTML='<thead><tr><th>Freq</th><th>Gain</th><th>Q</th><th>Type</th></tr></thead>';
+  tbl.innerHTML='<thead><tr><th>Freq</th><th>Gain</th><th>Q / S</th><th>Type</th></tr></thead>';
   const tb=document.createElement('tbody');
-  peqBands.forEach(({hz,gain,q})=>{
+  peqBands.forEach(({hz,gain,q,type})=>{
     const tr=document.createElement('tr');
     const gc=gain>=0?'peq-boost':'peq-cut';
     const gs=(gain>=0?'+':'')+gain+' dB';
-    tr.innerHTML=`<td class="peq-hz">${hz} Hz</td><td class="peq-gain ${gc}">${gs}</td><td class="peq-q">${q}</td><td class="peq-type">Peak</td>`;
+    const qNote=type==='Low Shelf'?q+' (S)':q;
+    tr.innerHTML=`<td class="peq-hz">${hz} Hz</td><td class="peq-gain ${gc}">${gs}</td><td class="peq-q">${qNote}</td><td class="peq-type">${type}</td>`;
     tb.appendChild(tr);
   });
   tbl.appendChild(tb);
@@ -1758,7 +1787,8 @@ document.getElementById('btn-copy-peq').addEventListener('click',()=>{
   const lines=['Room Correction PEQ (Harman target, ≤120 Hz)',''];
   peqBands.forEach((b,i)=>{
     const g=(b.gain>=0?'+':'')+b.gain;
-    lines.push(`Band ${i+1}:  ${b.hz} Hz  ${g} dB  Q ${b.q}  Peak`);
+    const qLabel=b.type==='Low Shelf'?`S ${b.q}`:`Q ${b.q}`;
+    lines.push(`Band ${i+1}:  ${b.hz} Hz  ${g} dB  ${qLabel}  ${b.type}`);
   });
   const text=lines.join('\n');
   navigator.clipboard.writeText(text).then(()=>{
