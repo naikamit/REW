@@ -4,28 +4,39 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>Room Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
 
 :root{
-  --bg:#07070d;
-  --surface:#0d0d18;
-  --border:#1a1a2e;
-  --text:#c0c0d8;
-  --text-dim:#444466;
-  --text-muted:#2a2a44;
-  --green:#44ffaa;
-  --yellow:#ffcc00;
-  --cyan:#28c8ff;
-  --red:#ff5050;
-  --accent:#6644ff;
+  --bg:#0F1416;
+  --surface:#191C1C;
+  --surface-container:#1E2222;
+  --surface-container-high:#282D2D;
+  --surface-container-highest:#333838;
+  --primary:#4DD9CF;
+  --on-primary:#003733;
+  --primary-container:#004F47;
+  --on-primary-container:#B4EFEB;
+  --on-surface:#E0E3E3;
+  --on-surface-variant:#BEC9C8;
+  --outline:#889392;
+  --outline-variant:#3F4948;
+  --error:#FFB4AB;
+  --error-container:#93000A;
+  --warning:#FFB77A;
+  --warning-container:#4A2800;
+  --success:#6EF0C4;
+  --success-container:#003828;
 }
 
 body{
   background:var(--bg);
-  font-family:'Courier New',monospace;
-  color:var(--text);
+  font-family:'Roboto',sans-serif;
+  color:var(--on-surface);
   height:100vh;
   display:flex;
   flex-direction:column;
@@ -36,316 +47,699 @@ body{
 .screen{
   display:none;
   flex-direction:column;
-  align-items:center;
   height:100%;
-  padding:20px 16px 16px;
-  gap:16px;
-  overflow-y:auto;
+  overflow:hidden;
 }
 .screen.active{display:flex;}
 
-/* ── HEADER ── */
-.app-header{
-  text-align:center;
+/* ── SCREEN BODY (scrollable area) ── */
+.screen-body{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* ── TOP APP BAR ── */
+.top-app-bar{
+  height:64px;
+  background:var(--surface-container);
+  border-bottom:1px solid var(--outline-variant);
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:8px;
   flex-shrink:0;
 }
-.app-header .title{
-  font-size:15px;font-weight:bold;letter-spacing:4px;color:#e0e0f0;
+.top-app-bar-title{
+  font-size:22px;
+  font-weight:400;
+  color:var(--on-surface);
+  flex:1;
 }
-.app-header .sub{
-  font-size:9px;color:var(--text-dim);letter-spacing:1.5px;margin-top:3px;
+.back-btn{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:transparent;
+  border:none;
+  color:var(--on-surface);
+  font-size:20px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  touch-action:manipulation;
+  flex-shrink:0;
+}
+.back-btn:active{background:rgba(255,255,255,0.08);}
+.step-chip{
+  background:var(--primary-container);
+  color:var(--on-primary-container);
+  border-radius:8px;
+  padding:4px 10px;
+  font-size:12px;
+  font-weight:500;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+/* ── BOTTOM BAR ── */
+.bottom-bar{
+  background:var(--surface-container);
+  border-top:1px solid var(--outline-variant);
+  padding:12px 16px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.bottom-bar-spacer{flex:1;}
+
+/* ── BUTTONS ── */
+.btn-filled{
+  background:var(--primary);
+  color:var(--on-primary);
+  border:none;
+  border-radius:20px;
+  height:40px;
+  padding:0 24px;
+  font-size:14px;
+  font-weight:500;
+  font-family:'Roboto',sans-serif;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:opacity .15s;
+  white-space:nowrap;
+}
+.btn-filled:active{opacity:.8;}
+
+.btn-outlined{
+  background:transparent;
+  color:var(--primary);
+  border:1px solid var(--primary);
+  border-radius:20px;
+  height:40px;
+  padding:0 24px;
+  font-size:14px;
+  font-weight:500;
+  font-family:'Roboto',sans-serif;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:opacity .15s;
+  white-space:nowrap;
+}
+.btn-outlined:active{opacity:.7;}
+
+.btn-text{
+  background:transparent;
+  color:var(--primary);
+  border:none;
+  border-radius:20px;
+  height:40px;
+  padding:0 12px;
+  font-size:14px;
+  font-weight:500;
+  font-family:'Roboto',sans-serif;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:opacity .15s;
+  white-space:nowrap;
+}
+.btn-text:active{opacity:.7;}
+
+.btn-large{
+  height:48px;
+  border-radius:24px;
+  padding:0 28px;
+  font-size:15px;
 }
 
 /* ── CARDS ── */
 .card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:6px;
-  padding:20px;
+  background:var(--surface-container);
+  border-radius:12px;
+  padding:16px;
   width:100%;
-  max-width:640px;
 }
 
-/* ── BUTTONS ── */
-.btn{
-  border-radius:4px;padding:14px 24px;font-size:13px;letter-spacing:1.5px;
-  cursor:pointer;font-family:'Courier New',monospace;border:1px solid;
-  touch-action:manipulation;transition:opacity .15s;
+/* ── WELCOME SCREEN ── */
+.hero-section{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:28px 16px 20px;
+  gap:8px;
 }
-.btn:active{opacity:.7;}
-.btn-primary{color:var(--green);background:#001a0e;border-color:#44ffaa55;width:100%;}
-.btn-danger {color:var(--red);background:#1a0000;border-color:#ff505055;width:100%;}
-.btn-warn   {color:var(--yellow);background:#1a1500;border-color:#ffcc0055;width:100%;}
-.btn-ghost  {color:var(--text-dim);background:#111;border-color:#55557733;width:100%;}
-.btn-sm     {padding:10px 16px;font-size:11px;flex:1;}
-
-.btn-row{display:flex;gap:8px;width:100%;max-width:640px;flex-shrink:0;}
-
-/* ── SPL BAR ── */
-.spl-wrap{width:100%;max-width:640px;}
-.spl-label{font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:6px;}
-.spl-bar-bg{
-  width:100%;height:14px;background:#111;border:1px solid var(--border);border-radius:2px;overflow:hidden;
+.hero-icon{
+  font-size:52px;
+  line-height:1;
+  margin-bottom:4px;
 }
-.spl-bar-fill{
-  height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));
-  transition:width .08s;border-radius:2px;
+.hero-title{
+  font-size:28px;
+  font-weight:400;
+  color:var(--on-surface);
+  letter-spacing:0;
 }
-.spl-val{font-size:22px;font-weight:bold;color:var(--cyan);text-align:center;margin-top:8px;letter-spacing:2px;}
-.spl-status{font-size:10px;text-align:center;margin-top:4px;letter-spacing:1px;min-height:14px;}
+.hero-subtitle{
+  font-size:14px;
+  color:var(--on-surface-variant);
+  text-align:center;
+}
 
-/* ── NOISE WARNING ── */
-.noise-warn{
-  background:#1a0a00;border:1px solid #ff880033;border-radius:4px;
-  padding:10px 14px;font-size:10px;color:#ff8800;letter-spacing:1px;
+.mic-check-label{
+  font-size:12px;
+  font-weight:500;
+  color:var(--on-surface-variant);
+  letter-spacing:0.8px;
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.level-label{
+  font-size:12px;
+  color:var(--on-surface-variant);
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.level-bar-track{
+  width:100%;
+  height:8px;
+  background:var(--surface-container-highest);
+  border-radius:4px;
+  overflow:hidden;
+}
+.level-bar-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--success),var(--warning),var(--error));
+  border-radius:4px;
+  transition:width .08s;
+}
+.level-db{
+  font-size:45px;
+  font-weight:300;
+  color:var(--primary);
+  text-align:center;
+  margin-top:12px;
+  line-height:1;
+  letter-spacing:-1px;
+}
+.level-status{
+  font-size:14px;
+  color:var(--on-surface-variant);
+  text-align:center;
+  margin-top:6px;
+  min-height:20px;
+}
+
+.howto-steps{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.howto-step{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+.howto-num{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:var(--primary-container);
+  color:var(--on-primary-container);
+  font-size:12px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  margin-top:1px;
+}
+.howto-text{
+  font-size:14px;
+  color:var(--on-surface-variant);
+  line-height:1.5;
+  padding-top:2px;
+}
+
+.noise-warn-card{
+  background:var(--warning-container);
+  border-radius:12px;
+  padding:14px 16px;
   display:none;
+  gap:8px;
+  align-items:flex-start;
+}
+.noise-warn-card.visible{display:flex;}
+.noise-warn-text{
+  font-size:14px;
+  color:var(--warning);
+  line-height:1.5;
 }
 
-/* ── CANVAS ── */
-.canvas-wrap{
-  border:1px solid var(--border);border-radius:4px;overflow:hidden;
-  background:#0a0a0f;width:100%;max-width:640px;
-  flex:1;min-height:0;
+/* ── CAPTURE SCREEN ── */
+.capture-header{
+  height:64px;
+  background:var(--surface-container);
+  border-bottom:1px solid var(--outline-variant);
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:12px;
+  flex-shrink:0;
 }
-.canvas-wrap canvas{display:block;width:100%;height:100%;}
+.capture-title{
+  font-size:22px;
+  font-weight:400;
+  color:var(--on-surface);
+  flex:1;
+}
+.sweep-chip{
+  background:var(--primary-container);
+  color:var(--on-primary-container);
+  border-radius:8px;
+  padding:4px 10px;
+  font-size:12px;
+  font-weight:500;
+}
 
-/* ── PROGRESS ── */
-.progress-wrap{
-  width:100%;max-width:640px;
+.canvas-card{
+  background:#0D1117;
+  border-radius:12px;
+  overflow:hidden;
+  flex:1;
+  min-height:180px;
 }
-.progress-bar-bg{
-  width:100%;height:6px;background:#111;border:1px solid var(--border);border-radius:3px;overflow:hidden;
+.canvas-card canvas{
+  display:block;
+  width:100%;
+  height:100%;
 }
-.progress-bar-fill{
-  height:100%;width:0%;background:var(--green);border-radius:3px;transition:width .3s;
-}
-.progress-step{font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-top:8px;min-height:16px;}
 
-/* ── STATUS BAR ── */
-.status-bar{
-  display:flex;gap:16px;font-size:10px;letter-spacing:1px;color:var(--text-dim);
-  flex-wrap:wrap;justify-content:center;flex-shrink:0;
+.status-row{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  align-items:center;
 }
-.status-bar b{color:var(--text);}
-.rec-label{color:var(--red)!important;}
-.done-label{color:var(--green)!important;}
+.status-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color:var(--on-surface-variant);
+}
+.status-item b{
+  font-weight:500;
+  color:var(--on-surface);
+}
+.rec-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--error);
+  animation:blink 1s step-start infinite;
+  flex-shrink:0;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
 
-/* ── TABS ── */
-.tabs{
-  display:flex;gap:0;width:100%;max-width:640px;
-  border:1px solid var(--border);border-radius:4px;overflow:hidden;flex-shrink:0;
+.progress-track{
+  width:100%;
+  height:4px;
+  background:var(--surface-container-highest);
+  border-radius:2px;
+  overflow:hidden;
 }
-.tab{
-  flex:1;padding:10px 4px;font-size:10px;letter-spacing:1.2px;text-align:center;
-  cursor:pointer;color:var(--text-dim);background:var(--surface);
-  border:none;font-family:'Courier New',monospace;transition:all .15s;
-  touch-action:manipulation;
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:var(--primary);
+  border-radius:2px;
+  transition:width .3s;
 }
-.tab.active{color:var(--green);background:#001a0e;}
+.progress-label{
+  font-size:12px;
+  color:var(--on-surface-variant);
+  margin-top:6px;
+  min-height:18px;
+}
+
+/* ── PROCESSING SCREEN ── */
+.processing-center{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:28px;
+  padding:32px;
+}
+.processing-title{
+  font-size:28px;
+  font-weight:400;
+  color:var(--on-surface);
+}
+.processing-progress-wrap{
+  width:100%;
+  max-width:360px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.processing-step{
+  font-size:14px;
+  color:var(--on-surface-variant);
+  text-align:center;
+}
+.processing-hint{
+  font-size:12px;
+  color:var(--outline);
+}
+
+/* ── RESULT SCREENS ── */
+.section-header{
+  font-size:12px;
+  font-weight:500;
+  color:var(--on-surface-variant);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:4px 0 2px;
+}
 
 /* ── INSIGHT CARDS ── */
 .insights{
-  display:flex;flex-direction:column;gap:8px;
-  width:100%;max-width:640px;flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 .insight-card{
-  border-radius:4px;padding:12px 14px;font-size:10px;line-height:1.7;letter-spacing:.5px;
-  border-left:3px solid;
+  border-radius:12px;
+  padding:14px 16px;
 }
-.insight-card .ic-title{font-size:11px;font-weight:bold;letter-spacing:1.5px;margin-bottom:4px;}
-.insight-card.green {background:#001a0e;border-color:var(--green);color:#88ddbb;}
-.insight-card.green .ic-title{color:var(--green);}
-.insight-card.yellow{background:#1a1200;border-color:var(--yellow);color:#ccaa66;}
-.insight-card.yellow .ic-title{color:var(--yellow);}
-.insight-card.red   {background:#1a0500;border-color:var(--red);color:#cc8888;}
-.insight-card.red .ic-title{color:var(--red);}
-
-/* ── RT60 BARS ── */
-.rt60-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
-  width:100%;max-width:640px;padding:0;
+.insight-card.green{background:var(--success-container);}
+.insight-card.yellow{background:var(--warning-container);}
+.insight-card.red{background:var(--error-container);}
+.insight-title{
+  font-size:13px;
+  font-weight:500;
+  margin-bottom:4px;
+  line-height:1.4;
 }
-.rt60-band{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.rt60-bar-wrap{
-  width:100%;flex:1;min-height:80px;background:#111;border:1px solid var(--border);
-  border-radius:3px;overflow:hidden;display:flex;align-items:flex-end;position:relative;
-}
-.rt60-bar-fill{width:100%;border-radius:2px 2px 0 0;transition:height .5s;}
-.rt60-bar-fill.green {background:var(--green);}
-.rt60-bar-fill.yellow{background:var(--yellow);}
-.rt60-bar-fill.red   {background:var(--red);}
-.rt60-val{font-size:8px;color:var(--text);letter-spacing:.5px;text-align:center;}
-.rt60-hz {font-size:7px;color:var(--text-dim);letter-spacing:.5px;text-align:center;}
-.rt60-ref-line{
-  position:absolute;width:100%;height:1px;background:#ffcc0066;
+.insight-card.green .insight-title{color:var(--success);}
+.insight-card.yellow .insight-title{color:var(--warning);}
+.insight-card.red .insight-title{color:var(--error);}
+.insight-body{
+  font-size:13px;
+  font-weight:400;
+  color:var(--on-surface-variant);
+  line-height:1.5;
 }
 
-/* ── EXPORT ROW ── */
-.export-row{
-  display:flex;gap:8px;width:100%;max-width:640px;flex-shrink:0;
+/* ── RT60 CHART ── */
+.rt60-chart-container{
+  display:flex;
+  flex-direction:row;
+  gap:8px;
+  height:160px;
+  align-items:flex-end;
+}
+.rt60-column{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  flex:1;
+  height:100%;
+}
+.rt60-bar-area{
+  flex:1;
+  width:100%;
+  position:relative;
+  display:flex;
+  align-items:flex-end;
+  background:var(--surface-container-highest);
+  border-radius:4px;
+  overflow:hidden;
+}
+.rt60-ideal-zone{
+  position:absolute;
+  left:0;right:0;
+  background:rgba(77,217,207,0.08);
+  border-top:1px solid rgba(77,217,207,0.30);
+  border-bottom:1px solid rgba(77,217,207,0.30);
+}
+.rt60-bar-fill{
+  width:100%;
+  border-radius:4px 4px 0 0;
+  transition:height .5s;
+  position:relative;
+  z-index:1;
+}
+.rt60-bar-fill.green{background:var(--success);}
+.rt60-bar-fill.yellow{background:var(--warning);}
+.rt60-bar-fill.red{background:var(--error);}
+.rt60-val-label{
+  font-size:11px;
+  font-weight:400;
+  color:var(--on-surface);
+  text-align:center;
+  white-space:nowrap;
+}
+.rt60-hz-label{
+  font-size:11px;
+  color:var(--on-surface-variant);
+  text-align:center;
+  white-space:nowrap;
+}
+.rt60-legend-note{
+  font-size:12px;
+  color:var(--on-surface-variant);
+  text-align:center;
+  line-height:1.5;
+}
+.wf-caption{
+  font-size:12px;
+  color:var(--on-surface-variant);
+  line-height:1.5;
+  text-align:center;
 }
 
-/* ── DESKTOP LAYOUT ── */
-@media(min-width:768px){
-  .screen{padding:24px 32px 24px;gap:20px;}
-  .app-header .title{font-size:18px;}
-  .canvas-wrap{min-height:320px;}
-  .tabs .tab{font-size:11px;padding:12px 8px;}
-  .rt60-grid{max-width:640px;}
-}
-
-/* ── NOTE ── */
-.note{
-  font-size:9px;line-height:1.8;color:#1e1e38;text-align:center;
-  flex-shrink:0;padding-top:4px;border-top:1px solid #111;width:100%;max-width:640px;
+/* ── DESKTOP ── */
+@media(min-width:600px){
+  .screen-body{
+    max-width:600px;
+    align-self:center;
+    width:100%;
+  }
+  .canvas-card{min-height:300px;}
 }
 
 .hidden{display:none!important;}
-.text-center{text-align:center;}
-.mt4{margin-top:4px;}
-.sep{width:100%;max-width:640px;height:1px;background:var(--border);flex-shrink:0;}
 </style>
 </head>
 <body>
 
 <!-- ══════════════════════════════════
-     SCREEN 1 — MIC CHECK
+     SCREEN 1 — WELCOME
 ════════════════════════════════════ -->
-<div id="screen-mic" class="screen active">
-  <div class="app-header">
-    <div class="title">ROOM ANALYZER</div>
-    <div class="sub">frequency · rt60 · waterfall · insights</div>
-  </div>
+<div id="screen-welcome" class="screen active">
+  <div class="screen-body">
 
-  <div class="card">
-    <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;margin-bottom:14px;">MIC CHECK</div>
-    <div class="spl-wrap">
-      <div class="spl-label">INPUT LEVEL</div>
-      <div class="spl-bar-bg"><div class="spl-bar-fill" id="spl-bar"></div></div>
-      <div class="spl-val" id="spl-num">— dB</div>
-      <div class="spl-status" id="spl-status" style="color:var(--text-dim);">waiting for mic permission…</div>
+    <div class="hero-section">
+      <div class="hero-icon">🎙</div>
+      <div class="hero-title">Room Analyzer</div>
+      <div class="hero-subtitle">Measure frequency response, decay time, and waterfall in your listening space</div>
     </div>
+
+    <!-- Mic check card -->
+    <div class="card">
+      <div class="mic-check-label">Mic Check</div>
+      <div class="level-label">Input Level</div>
+      <div class="level-bar-track">
+        <div class="level-bar-fill" id="spl-bar"></div>
+      </div>
+      <div class="level-db" id="spl-num">— dB</div>
+      <div class="level-status" id="spl-status">Waiting for microphone permission</div>
+    </div>
+
+    <!-- Noise warning card -->
+    <div class="noise-warn-card" id="noise-warn">
+      <div class="noise-warn-text">Background noise is high. Measurement accuracy will suffer — try a quieter space or close windows.</div>
+    </div>
+
+    <!-- How to card -->
+    <div class="card">
+      <div class="mic-check-label" style="margin-bottom:14px;">How to Measure</div>
+      <div class="howto-steps">
+        <div class="howto-step">
+          <div class="howto-num">1</div>
+          <div class="howto-text">Place your device mic facing the room</div>
+        </div>
+        <div class="howto-step">
+          <div class="howto-num">2</div>
+          <div class="howto-text">Tap Start — the app plays 3 sweeps through your speakers</div>
+        </div>
+        <div class="howto-step">
+          <div class="howto-num">3</div>
+          <div class="howto-text">Keep the room quiet while sweeps play</div>
+        </div>
+        <div class="howto-step">
+          <div class="howto-num">4</div>
+          <div class="howto-text">Results appear automatically</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div class="noise-warn hidden" id="noise-warn">
-    ⚠ Background noise is high (&gt;55 dBSPL). Measurement accuracy will suffer — try a quieter space or close windows.
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <div class="bottom-bar-spacer"></div>
+    <button class="btn-outlined btn-large hidden" id="btn-start">Start Measurement</button>
+    <button class="btn-outlined btn-large" id="btn-mic-req">Enable Microphone</button>
+    <div class="bottom-bar-spacer"></div>
   </div>
-
-  <div class="card" style="font-size:10px;line-height:2;color:var(--text-dim);">
-    <div style="font-size:11px;color:var(--text);letter-spacing:1px;margin-bottom:10px;">HOW TO MEASURE</div>
-    <div>1. Place your device mic facing the room</div>
-    <div>2. Tap START — the app plays 3 sweeps through your speakers</div>
-    <div>3. Keep the room quiet while sweeps play</div>
-    <div>4. Results appear automatically</div>
-  </div>
-
-  <button class="btn btn-primary hidden" id="btn-start">▶ START MEASUREMENT</button>
-  <button class="btn btn-ghost" id="btn-mic-req">⏺ ENABLE MICROPHONE</button>
-
-  <div class="note">uses your device speaker + microphone · no audio is uploaded</div>
 </div>
 
 <!-- ══════════════════════════════════
-     SCREEN 2 — LIVE CAPTURE
+     SCREEN 2 — CAPTURE
 ════════════════════════════════════ -->
 <div id="screen-capture" class="screen">
-  <div class="app-header">
-    <div class="title">ROOM ANALYZER</div>
-    <div class="sub" id="capture-sub">sweep 1 of 3 · keep room quiet</div>
+  <div class="capture-header">
+    <div class="capture-title">Recording</div>
+    <div class="sweep-chip" id="sweep-chip">Sweep 1 / 3</div>
   </div>
 
-  <div class="canvas-wrap" id="capture-canvas-wrap">
-    <canvas id="capture-canvas"></canvas>
-  </div>
+  <div class="screen-body" style="gap:14px;">
+    <div class="canvas-card" id="capture-canvas-card" style="flex:1;min-height:200px;">
+      <canvas id="capture-canvas"></canvas>
+    </div>
 
-  <div class="status-bar">
-    <span>STATE: <b id="cap-state">—</b></span>
-    <span>SWEEP: <b id="cap-sweep">—</b></span>
-    <span>PEAK: <b id="cap-peak">—</b></span>
-  </div>
+    <div class="status-row">
+      <div class="status-item">
+        <div class="rec-dot"></div>
+        <span id="cap-state">REC</span>
+      </div>
+      <div class="status-item">SWEEP <b id="cap-sweep">—</b></div>
+      <div class="status-item">PEAK <b id="cap-peak">—</b></div>
+    </div>
 
-  <div class="progress-wrap">
-    <div class="progress-bar-bg"><div class="progress-bar-fill" id="cap-progress"></div></div>
-    <div class="progress-step" id="cap-step">initializing…</div>
+    <div>
+      <div class="progress-track">
+        <div class="progress-fill" id="cap-progress"></div>
+      </div>
+      <div class="progress-label" id="cap-step">Initializing…</div>
+    </div>
   </div>
-
-  <div class="note">do not touch the device · keep it still</div>
 </div>
 
 <!-- ══════════════════════════════════
      SCREEN 3 — PROCESSING
 ════════════════════════════════════ -->
 <div id="screen-processing" class="screen">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;width:100%;max-width:640px;">
-    <div style="font-size:13px;letter-spacing:3px;color:var(--text);">ANALYZING</div>
-    <div class="progress-wrap">
-      <div class="progress-bar-bg"><div class="progress-bar-fill" id="proc-progress"></div></div>
-      <div class="progress-step text-center" id="proc-step">extracting impulse response…</div>
+  <div class="processing-center">
+    <div class="processing-title">Analyzing</div>
+    <div class="processing-progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="proc-progress"></div>
+      </div>
+      <div class="processing-step" id="proc-step">Extracting impulse response…</div>
     </div>
-    <div style="font-size:9px;color:var(--text-muted);letter-spacing:1px;">this takes a few seconds</div>
+    <div class="processing-hint">This takes a few seconds</div>
   </div>
 </div>
 
 <!-- ══════════════════════════════════
-     SCREEN 4 — RESULTS
+     SCREEN 4 — RESULT: FREQ RESPONSE
 ════════════════════════════════════ -->
-<div id="screen-results" class="screen">
-  <div class="app-header">
-    <div class="title">ROOM ANALYZER</div>
-    <div class="sub" id="result-sub">measurement complete</div>
+<div id="screen-result-freq" class="screen">
+  <div class="top-app-bar">
+    <div class="top-app-bar-title">Frequency Response</div>
+    <div class="step-chip">1 of 3</div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="freq">FREQ</button>
-    <button class="tab" data-tab="rt60">RT60</button>
-    <button class="tab" data-tab="waterfall">WFALL</button>
-  </div>
-
-  <!-- FREQ TAB -->
-  <div id="tab-freq" class="tab-panel" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
-    <div class="canvas-wrap" id="freq-canvas-wrap" style="min-height:180px;">
+  <div class="screen-body">
+    <div class="canvas-card" id="freq-canvas-card" style="min-height:220px;">
       <canvas id="freq-canvas"></canvas>
     </div>
+
+    <div class="section-header">Insights</div>
     <div class="insights" id="freq-insights"></div>
   </div>
 
-  <!-- RT60 TAB -->
-  <div id="tab-rt60" class="tab-panel hidden" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%;">
-    <div class="rt60-grid" id="rt60-grid" style="min-height:160px;align-items:flex-end;"></div>
-    <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;text-align:center;">
-      yellow line = ideal RT60 for listening room (0.3–0.5s)
+  <div class="bottom-bar">
+    <button class="btn-text" id="btn-export-freq-png">↓ PNG</button>
+    <div class="bottom-bar-spacer"></div>
+    <button class="btn-filled" id="btn-goto-rt60">RT60 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 5 — RESULT: RT60
+════════════════════════════════════ -->
+<div id="screen-result-rt60" class="screen">
+  <div class="top-app-bar">
+    <button class="back-btn" id="btn-rt60-back">←</button>
+    <div class="top-app-bar-title">Decay Time · RT60</div>
+    <div class="step-chip">2 of 3</div>
+  </div>
+
+  <div class="screen-body">
+    <div class="card">
+      <div class="rt60-chart-container" id="rt60-chart-container"></div>
     </div>
+    <div class="rt60-legend-note">Teal band = ideal RT60 for a listening room (0.3 – 0.5 s)</div>
+    <div class="section-header">Insights</div>
     <div class="insights" id="rt60-insights"></div>
   </div>
 
-  <!-- WATERFALL TAB -->
-  <div id="tab-waterfall" class="tab-panel hidden" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%;">
-    <div class="canvas-wrap" id="wf-canvas-wrap" style="min-height:200px;">
+  <div class="bottom-bar">
+    <button class="btn-text" id="btn-export-rt60-png">↓ PNG</button>
+    <div class="bottom-bar-spacer"></div>
+    <button class="btn-filled" id="btn-goto-waterfall">Waterfall →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 6 — RESULT: WATERFALL
+════════════════════════════════════ -->
+<div id="screen-result-waterfall" class="screen">
+  <div class="top-app-bar">
+    <button class="back-btn" id="btn-wf-back">←</button>
+    <div class="top-app-bar-title">Waterfall · CSD</div>
+    <div class="step-chip">3 of 3</div>
+  </div>
+
+  <div class="screen-body">
+    <div class="canvas-card" id="wf-canvas-card" style="min-height:220px;">
       <canvas id="wf-canvas"></canvas>
     </div>
-    <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;text-align:center;">
-      shows energy decay over 500ms · bright = energy still present
-    </div>
+    <div class="wf-caption">Shows energy decay over 500 ms · bright = energy still present</div>
+    <div class="section-header">Insights</div>
     <div class="insights" id="wf-insights"></div>
   </div>
 
-  <div class="sep"></div>
-
-  <div class="export-row">
-    <button class="btn btn-ghost btn-sm" id="btn-export-png">⬇ PNG</button>
-    <button class="btn btn-ghost btn-sm" id="btn-export-csv">⬇ CSV</button>
+  <div class="bottom-bar">
+    <button class="btn-text" id="btn-export-wf-csv">↓ CSV</button>
+    <button class="btn-text" id="btn-export-wf-png">↓ PNG</button>
+    <div class="bottom-bar-spacer"></div>
+    <button class="btn-filled" id="btn-redo">↺ Measure Again</button>
   </div>
-
-  <button class="btn btn-ghost" id="btn-redo" style="max-width:640px;">↺ MEASURE AGAIN</button>
-
-  <div class="note">peak-hold · 3-sweep average · 20Hz–20kHz</div>
 </div>
 
 <script>
 // ═══════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════
-const SWEEP_DURATION = 6;    // seconds per sweep — shorter = faster processing on mobile
+const SWEEP_DURATION = 6;    // seconds per sweep
 const NUM_SWEEPS     = 3;
 const SAMPLE_RATE    = 48000;
 const MIN_HZ         = 20;
@@ -356,7 +750,7 @@ const DB_MAX         = -10;
 const IDEAL_RT60_LO  = 0.3;
 const IDEAL_RT60_HI  = 0.5;
 
-const DB_GRID  = [-80,-70,-60,-50,-40,-30,-20];
+const DB_GRID = [-80,-70,-60,-50,-40,-30,-20];
 const OCT_LABELS = [
   {hz:20,l:'20'},{hz:50,l:'50'},{hz:100,l:'100'},{hz:200,l:'200'},
   {hz:500,l:'500'},{hz:1000,l:'1k'},{hz:2000,l:'2k'},
@@ -379,22 +773,47 @@ let micSource  = null;
 let analyser   = null;
 let rafCapture = null;
 
-// Results
-let freqCurve    = null; // Float32Array, dB per band
-let rt60Values   = null; // {hz, t60, color}[]
-let waterfallData = null; // 2D array [timeSlice][band]
+let freqCurve    = null;
+let rt60Values   = null;
+let waterfallData = null;
 
 // ═══════════════════════════════════════════════
 //  SCREEN MANAGEMENT
 // ═══════════════════════════════════════════════
+let currentScreen = 'welcome';
+
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
-  if(id==='results') setTimeout(drawAllResults,80);
+  currentScreen = id;
+
+  if(id==='result-freq'){
+    const card = document.getElementById('freq-canvas-card');
+    const cvs  = document.getElementById('freq-canvas');
+    cvs.width  = card.clientWidth;
+    cvs.height = card.clientHeight;
+    drawFreqResponse();
+    generateFreqInsights(freqCurve);
+  }
+  if(id==='result-waterfall'){
+    const card = document.getElementById('wf-canvas-card');
+    const cvs  = document.getElementById('wf-canvas');
+    cvs.width  = card.clientWidth;
+    cvs.height = card.clientHeight;
+    setTimeout(()=>{drawWaterfall();generateWaterfallInsights();},80);
+  }
+  if(id==='result-rt60'){
+    setTimeout(()=>{drawRT60();generateRT60Insights();},80);
+  }
+  if(id==='capture'){
+    const cc=document.getElementById('capture-canvas');
+    cc.width=cc.parentElement.clientWidth;
+    cc.height=cc.parentElement.clientHeight;
+  }
 }
 
 // ═══════════════════════════════════════════════
-//  SCREEN 1 — MIC CHECK
+//  SCREEN 1 — MIC CHECK / WELCOME
 // ═══════════════════════════════════════════════
 let splRaf = null;
 let splAnalyser = null;
@@ -413,12 +832,12 @@ document.getElementById('btn-mic-req').addEventListener('click', async()=>{
 
     document.getElementById('btn-mic-req').classList.add('hidden');
     document.getElementById('btn-start').classList.remove('hidden');
-    document.getElementById('spl-status').textContent = 'mic active — input level shown above';
-    document.getElementById('spl-status').style.color = 'var(--green)';
+    document.getElementById('spl-status').textContent = 'Mic active — input level shown above';
+    document.getElementById('spl-status').style.color = 'var(--success)';
     startSplMeter();
   }catch(e){
-    document.getElementById('spl-status').textContent = `mic error: ${e.name}`;
-    document.getElementById('spl-status').style.color = 'var(--red)';
+    document.getElementById('spl-status').textContent = 'Mic error: '+e.name;
+    document.getElementById('spl-status').style.color = 'var(--error)';
   }
 });
 
@@ -433,12 +852,12 @@ function startSplMeter(){
     const db = rms>0 ? 20*Math.log10(rms) : -100;
     const pct = Math.max(0,Math.min(100,((db+60)/60)*100));
     document.getElementById('spl-bar').style.width = pct+'%';
-    document.getElementById('spl-num').textContent  = db>-100?`${db.toFixed(1)} dBFS`:'— dB';
+    document.getElementById('spl-num').textContent  = db>-100?db.toFixed(1)+' dBFS':'— dB';
     const warn = document.getElementById('noise-warn');
     if(db > -30){
-      warn.classList.remove('hidden');
+      warn.classList.add('visible');
     } else {
-      warn.classList.add('hidden');
+      warn.classList.remove('visible');
     }
   }
   tick();
@@ -456,12 +875,6 @@ document.getElementById('btn-start').addEventListener('click', ()=>{
 // ═══════════════════════════════════════════════
 const capCanvas = document.getElementById('capture-canvas');
 const capCtx    = capCanvas.getContext('2d');
-
-function resizeCapCanvas(){
-  const w = capCanvas.parentElement;
-  capCanvas.width  = w.clientWidth;
-  capCanvas.height = w.clientHeight;
-}
 
 // Generate log-swept sine as AudioBuffer
 function generateSweep(ac, duration, f1, f2){
@@ -541,12 +954,12 @@ async function startMeasurement(){
       freqCurve     = new Float32Array(NUM_BANDS+1).fill(DB_MIN);
       rt60Values    = RT60_BANDS.map(hz=>({hz,t60:0.4,color:'green'}));
       waterfallData = buildDummyWaterfall();
-      showScreen('results');
+      showScreen('result-freq');
       return;
     }
 
     document.getElementById('proc-progress').style.width='35%';
-    document.getElementById('proc-step').textContent='extracting impulse responses…';
+    document.getElementById('proc-step').textContent='Extracting impulse responses…';
     await new Promise(r=>setTimeout(r,80));
 
     const sig    = decoded.getChannelData(0);
@@ -560,7 +973,7 @@ async function startMeasurement(){
       const sStart = Math.round(sweepStartTimes[sw] * sr);
       const seg    = sig.slice(sStart, sStart + Math.ceil(totalPerSweep*sr));
       if(seg.length < irLen) continue;
-      document.getElementById('proc-step').textContent=`deconvolving sweep ${sw+1}/${NUM_SWEEPS}…`;
+      document.getElementById('proc-step').textContent=`Deconvolving sweep ${sw+1}/${NUM_SWEEPS}…`;
       await new Promise(r=>setTimeout(r,30));
       const ir = await convolveOffline(seg, inv, sr, irLen);
       for(let i=0;i<irLen;i++) avgIR[i]+=ir[i];
@@ -570,36 +983,35 @@ async function startMeasurement(){
     if(valid>0) for(let i=0;i<irLen;i++) avgIR[i]/=valid;
 
     document.getElementById('proc-progress').style.width='65%';
-    document.getElementById('proc-step').textContent='computing frequency response…';
+    document.getElementById('proc-step').textContent='Computing frequency response…';
     await new Promise(r=>setTimeout(r,80));
     freqCurve = computeFreqResponse(avgIR, sr);
 
     document.getElementById('proc-progress').style.width='78%';
-    document.getElementById('proc-step').textContent='measuring RT60…';
+    document.getElementById('proc-step').textContent='Measuring RT60…';
     await new Promise(r=>setTimeout(r,80));
     rt60Values = computeRT60(avgIR, sr);
 
     document.getElementById('proc-progress').style.width='90%';
-    document.getElementById('proc-step').textContent='building waterfall…';
+    document.getElementById('proc-step').textContent='Building waterfall…';
     await new Promise(r=>setTimeout(r,80));
     waterfallData = computeWaterfall(avgIR, sr);
 
     document.getElementById('proc-progress').style.width='100%';
-    document.getElementById('proc-step').textContent='done.';
+    document.getElementById('proc-step').textContent='Done.';
     await new Promise(r=>setTimeout(r,300));
-    showScreen('results');
+    showScreen('result-freq');
   };
 
-  recorder.start(100); // collect data every 100ms so chunks arrive steadily
+  recorder.start(100);
   const recordStart   = ac.currentTime;
   const sweepStartTimes = [];
 
-  document.getElementById('cap-state').textContent='⏺ REC';
-  document.getElementById('cap-state').className='rec-label';
+  document.getElementById('cap-state').textContent='REC';
 
   for(let sw=0;sw<NUM_SWEEPS;sw++){
     document.getElementById('cap-sweep').textContent=`${sw+1}/${NUM_SWEEPS}`;
-    document.getElementById('capture-sub').textContent=`sweep ${sw+1} of ${NUM_SWEEPS} · keep room quiet`;
+    document.getElementById('sweep-chip').textContent=`Sweep ${sw+1} / ${NUM_SWEEPS}`;
 
     const sweepTime = recordStart + sw*totalPerSweep + silencePre;
     sweepStartTimes.push(sweepTime - recordStart);
@@ -614,8 +1026,8 @@ async function startMeasurement(){
         const frac=Math.min(1,(performance.now()-t0)/(t1-t0));
         document.getElementById('cap-progress').style.width=((sw+frac)/NUM_SWEEPS*100)+'%';
         document.getElementById('cap-step').textContent=
-          frac<silencePre/totalPerSweep?'silence…':
-          frac<(silencePre+sweepDur)/totalPerSweep?'sweep playing…':'capturing tail…';
+          frac<silencePre/totalPerSweep?'Silence…':
+          frac<(silencePre+sweepDur)/totalPerSweep?'Sweep playing…':'Capturing tail…';
         drawLiveCapture();
         if(frac<1) rafCapture=requestAnimationFrame(tick); else resolve();
       }
@@ -629,7 +1041,7 @@ async function startMeasurement(){
 
   showScreen('processing');
   document.getElementById('proc-progress').style.width='10%';
-  document.getElementById('proc-step').textContent='decoding audio…';
+  document.getElementById('proc-step').textContent='Decoding audio…';
   // recorder.onstop fires next — already registered above
 }
 
@@ -736,7 +1148,7 @@ function bandpassFilter(buf, sr, f_lo, f_hi){
 }
 
 function computeWaterfall(ir, sr){
-  // STFT: 512 windows, each ~10ms apart, showing first 500ms
+  // STFT: windows each ~10ms apart, showing first 500ms
   const windowMs   = 40;   // ms per window
   const stepMs     = 8;    // ms per step
   const numSteps   = Math.ceil(500/stepMs);
@@ -747,7 +1159,7 @@ function computeWaterfall(ir, sr){
     const offset = s*stepSamples;
     const row    = new Float32Array(NUM_BANDS+1);
     for(let bi=0;bi<=NUM_BANDS;bi++){
-      if(BANDS[bi]>8000){row[bi]=DB_MIN;continue;}// focus on bass/mids for waterfall
+      if(BANDS[bi]>8000){row[bi]=DB_MIN;continue;}
       const db = goertzelDB(ir.slice(offset, offset+winSamples), BANDS[bi], sr);
       row[bi]  = db;
     }
@@ -761,7 +1173,7 @@ function computeWaterfall(ir, sr){
 }
 
 function buildDummyWaterfall(){
-  const numSteps=60;const wf=[];
+  const numSteps=60; const wf=[];
   for(let s=0;s<numSteps;s++){
     const row=new Float32Array(NUM_BANDS+1);
     for(let bi=0;bi<=NUM_BANDS;bi++){
@@ -785,13 +1197,13 @@ function drawLiveCapture(){
   analyser.getFloatFrequencyData(buf);
   const binHz=SAMPLE_RATE/analyser.fftSize;
 
-  capCtx.fillStyle='#0a0a0f';capCtx.fillRect(0,0,W,H);
+  capCtx.fillStyle='#0D1117'; capCtx.fillRect(0,0,W,H);
   // Grid
   DB_GRID.forEach(db=>{
     const y=PAD.t+GH-((db-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(y<PAD.t||y>PAD.t+GH) return;
-    capCtx.strokeStyle='#1a1a28';capCtx.lineWidth=1;
-    capCtx.beginPath();capCtx.moveTo(PAD.l,y);capCtx.lineTo(PAD.l+GW,y);capCtx.stroke();
+    capCtx.strokeStyle='rgba(255,255,255,0.07)'; capCtx.lineWidth=1;
+    capCtx.beginPath(); capCtx.moveTo(PAD.l,y); capCtx.lineTo(PAD.l+GW,y); capCtx.stroke();
   });
 
   // Curve
@@ -808,13 +1220,9 @@ function drawLiveCapture(){
     const y=PAD.t+GH-((Math.max(DB_MIN,Math.min(DB_MAX,db))-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(first){capCtx.moveTo(x,y);first=false;}else capCtx.lineTo(x,y);
   }
-  capCtx.strokeStyle='#28c8ff';capCtx.lineWidth=1.5;
-  capCtx.shadowColor='#28c8ff';capCtx.shadowBlur=4;
-  capCtx.stroke();capCtx.shadowBlur=0;
-
-  // REC dot
-  capCtx.fillStyle='#ff5050';
-  capCtx.beginPath();capCtx.arc(PAD.l+8,PAD.t+7,3,0,Math.PI*2);capCtx.fill();
+  capCtx.strokeStyle='#4DD9CF'; capCtx.lineWidth=1.5;
+  capCtx.shadowColor='#4DD9CF'; capCtx.shadowBlur=4;
+  capCtx.stroke(); capCtx.shadowBlur=0;
 }
 
 // ═══════════════════════════════════════════════
@@ -823,31 +1231,31 @@ function drawLiveCapture(){
 const PAD={l:38,r:8,t:14,b:28};
 
 function G(canvas){
-  const W=canvas.width,H=canvas.height;
+  const W=canvas.width, H=canvas.height;
   return{W,H,GW:W-PAD.l-PAD.r,GH:H-PAD.t-PAD.b};
 }
 
 function drawGrid(ctx,canvas){
   const{W,H,GW,GH}=G(canvas);
-  ctx.fillStyle='#0a0a0f';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#0D1117'; ctx.fillRect(0,0,W,H);
   DB_GRID.forEach(db=>{
     const y=PAD.t+GH-((db-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(y<PAD.t||y>PAD.t+GH) return;
-    ctx.strokeStyle='#1a1a28';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(PAD.l+GW,y);ctx.stroke();
-    ctx.fillStyle='#3a3a55';ctx.font="8px 'Courier New'";
-    ctx.textAlign='right';ctx.fillText(db,PAD.l-3,y+3);
+    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(PAD.l+GW,y); ctx.stroke();
+    ctx.fillStyle='#889392'; ctx.font='11px Roboto,sans-serif';
+    ctx.textAlign='right'; ctx.fillText(db,PAD.l-3,y+4);
   });
   OCT_LABELS.forEach(({hz,l})=>{
     const x=PAD.l+fToX(hz,GW);
     const maj=hz===100||hz===1000||hz===10000;
-    ctx.strokeStyle=maj?'#222238':'#131320';ctx.lineWidth=maj?1.5:1;
-    ctx.beginPath();ctx.moveTo(x,PAD.t);ctx.lineTo(x,PAD.t+GH);ctx.stroke();
-    ctx.fillStyle=maj?'#4a4a66':'#2a2a44';
-    ctx.font=`${maj?9:8}px 'Courier New'`;ctx.textAlign='center';
-    ctx.fillText(l,x,PAD.t+GH+14);
+    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=maj?1:0.5;
+    ctx.beginPath(); ctx.moveTo(x,PAD.t); ctx.lineTo(x,PAD.t+GH); ctx.stroke();
+    ctx.fillStyle='#889392';
+    ctx.font=`${maj?11:10}px Roboto,sans-serif`; ctx.textAlign='center';
+    ctx.fillText(l,x,PAD.t+GH+16);
   });
-  ctx.strokeStyle='#1e1e32';ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
   ctx.strokeRect(PAD.l,PAD.t,GW,GH);
 }
 
@@ -859,7 +1267,7 @@ function hexAlpha(hex,a){
 function drawCurve(ctx,canvas,vals,color,fillAlpha,lw){
   const{GW,GH}=G(canvas);
   ctx.save();
-  ctx.beginPath();ctx.rect(PAD.l,PAD.t,GW,GH);ctx.clip();
+  ctx.beginPath(); ctx.rect(PAD.l,PAD.t,GW,GH); ctx.clip();
   const grad=ctx.createLinearGradient(0,PAD.t,0,PAD.t+GH);
   grad.addColorStop(0,hexAlpha(color,fillAlpha));
   grad.addColorStop(0.55,hexAlpha(color,fillAlpha*0.35));
@@ -873,16 +1281,16 @@ function drawCurve(ctx,canvas,vals,color,fillAlpha,lw){
   });
   const lastX=PAD.l+fToX(BANDS[Math.min(vals.length-1,NUM_BANDS)],GW);
   ctx.lineTo(lastX,PAD.t+GH);
-  ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
   ctx.beginPath();
   vals.forEach((db,i)=>{
     if(i>NUM_BANDS) return;
     const x=PAD.l+fToX(BANDS[i],GW);
     const y=PAD.t+GH-((Math.max(DB_MIN,Math.min(DB_MAX,db))-DB_MIN)/(DB_MAX-DB_MIN))*GH;
-    if(i===0) ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   });
-  ctx.strokeStyle=color;ctx.lineWidth=lw||1.5;
-  ctx.shadowColor=color;ctx.shadowBlur=5;ctx.stroke();ctx.shadowBlur=0;
+  ctx.strokeStyle=color; ctx.lineWidth=lw||1.5;
+  ctx.shadowColor=color; ctx.shadowBlur=5; ctx.stroke(); ctx.shadowBlur=0;
   ctx.restore();
 }
 
@@ -899,23 +1307,23 @@ const freqCanvas = document.getElementById('freq-canvas');
 const freqCtx    = freqCanvas.getContext('2d');
 
 function drawFreqResponse(){
-  const wrap = document.getElementById('freq-canvas-wrap');
-  freqCanvas.width  = wrap.clientWidth;
-  freqCanvas.height = wrap.clientHeight;
+  const card = document.getElementById('freq-canvas-card');
+  freqCanvas.width  = card.clientWidth;
+  freqCanvas.height = card.clientHeight;
   if(!freqCurve) return;
   drawGrid(freqCtx,freqCanvas);
-  drawCurve(freqCtx,freqCanvas,Array.from(freqCurve),'#44ffaa',0.45,2);
-  drawCurve(freqCtx,freqCanvas,smooth(Array.from(freqCurve),10),'#ffcc00',0.2,1.5);
+  drawCurve(freqCtx,freqCanvas,Array.from(freqCurve),'#4DD9CF',0.45,2);
+  drawCurve(freqCtx,freqCanvas,smooth(Array.from(freqCurve),10),'#FFB77A',0.2,1.5);
   // Legend
-  const{GW}=G(freqCanvas);
-  freqCtx.fillStyle='#1a1a2e';freqCtx.fillRect(PAD.l+5,PAD.t+4,145,34);
-  freqCtx.strokeStyle='#222236';freqCtx.lineWidth=1;
-  freqCtx.strokeRect(PAD.l+5,PAD.t+4,145,34);
-  freqCtx.font="8px 'Courier New'";freqCtx.textAlign='left';
-  freqCtx.fillStyle='#44ffaa';freqCtx.fillRect(PAD.l+10,PAD.t+13,12,2);
-  freqCtx.fillStyle='#8a8aaa';freqCtx.fillText('raw response',PAD.l+26,PAD.t+16);
-  freqCtx.fillStyle='rgba(255,204,0,0.85)';freqCtx.fillRect(PAD.l+10,PAD.t+25,12,2);
-  freqCtx.fillStyle='#8a8aaa';freqCtx.fillText('1/3 oct smoothed',PAD.l+26,PAD.t+28);
+  freqCtx.fillStyle='rgba(30,34,34,0.88)';
+  freqCtx.beginPath();
+  freqCtx.roundRect(PAD.l+6,PAD.t+6,150,38,4);
+  freqCtx.fill();
+  freqCtx.font='10px Roboto,sans-serif'; freqCtx.textAlign='left';
+  freqCtx.fillStyle='#4DD9CF'; freqCtx.fillRect(PAD.l+12,PAD.t+15,12,2);
+  freqCtx.fillStyle='#BEC9C8'; freqCtx.fillText('Raw response',PAD.l+28,PAD.t+18);
+  freqCtx.fillStyle='#FFB77A'; freqCtx.fillRect(PAD.l+12,PAD.t+28,12,2);
+  freqCtx.fillStyle='#BEC9C8'; freqCtx.fillText('1/3 oct smoothed',PAD.l+28,PAD.t+31);
 }
 
 // ─── Waterfall ───
@@ -923,17 +1331,17 @@ const wfCanvas = document.getElementById('wf-canvas');
 const wfCtx    = wfCanvas.getContext('2d');
 
 function drawWaterfall(){
-  const wrap = document.getElementById('wf-canvas-wrap');
-  wfCanvas.width  = wrap.clientWidth;
-  wfCanvas.height = wrap.clientHeight;
+  const card = document.getElementById('wf-canvas-card');
+  wfCanvas.width  = card.clientWidth;
+  wfCanvas.height = card.clientHeight;
   if(!waterfallData||!waterfallData.length) return;
-  const W=wfCanvas.width,H=wfCanvas.height;
-  wfCtx.fillStyle='#0a0a0f';wfCtx.fillRect(0,0,W,H);
+  const W=wfCanvas.width, H=wfCanvas.height;
+  wfCtx.fillStyle='#0D1117'; wfCtx.fillRect(0,0,W,H);
 
   const GW=W-PAD.l-PAD.r, GH=H-PAD.t-PAD.b;
   const numSteps=waterfallData.length;
   const stepH=GH/numSteps;
-  const maxHz=4000; // show up to 4kHz for waterfall clarity
+  const maxHz=4000;
 
   waterfallData.forEach((row,si)=>{
     const y=PAD.t + si*stepH;
@@ -942,60 +1350,57 @@ function drawWaterfall(){
       const x0=PAD.l+fToX(BANDS[bi],GW*(Math.log10(maxHz/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ)));
       const x1=bi<NUM_BANDS?PAD.l+fToX(BANDS[bi+1],GW*(Math.log10(maxHz/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ))):PAD.l+GW;
       const db=row[bi];
-      const t=(db-DB_MIN)/(DB_MAX-DB_MIN); // 0=quiet,1=loud
-      const r=Math.round(t*255);
-      const g=Math.round(t>0.5?(2-2*t)*255:0);
-      const b=Math.round(t>0.5?0:(1-2*t)*80);
-      wfCtx.fillStyle=`rgb(${r},${g},${b})`;
+      const t=(db-DB_MIN)/(DB_MAX-DB_MIN);
+      wfCtx.fillStyle=`rgb(${Math.round(t*0)},${Math.round(t*180)},${Math.round(t*200)})`;
       wfCtx.fillRect(x0, y, Math.max(1,x1-x0), Math.ceil(stepH)+1);
     }
   });
 
   // Axes
-  wfCtx.strokeStyle='#1e1e32';wfCtx.lineWidth=1;
+  wfCtx.strokeStyle='rgba(255,255,255,0.07)'; wfCtx.lineWidth=1;
   wfCtx.strokeRect(PAD.l,PAD.t,GW,GH);
   // Time axis labels
   const timeLabels=[0,100,200,300,400,500];
   timeLabels.forEach(ms=>{
     const y=PAD.t+GH*(ms/500);
-    wfCtx.fillStyle='#3a3a55';wfCtx.font="8px 'Courier New'";
-    wfCtx.textAlign='right';wfCtx.fillText(ms+'ms',PAD.l-3,y+3);
+    wfCtx.fillStyle='#889392'; wfCtx.font='10px Roboto,sans-serif';
+    wfCtx.textAlign='right'; wfCtx.fillText(ms+'ms',PAD.l-4,y+4);
   });
   // Freq axis (bottom)
   [20,50,100,200,500,1000,2000,4000].forEach(hz=>{
     if(hz>maxHz) return;
     const frac=Math.log10(hz/MIN_HZ)/Math.log10(maxHz/MIN_HZ);
     const x=PAD.l+frac*GW*(Math.log10(maxHz/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ));
-    wfCtx.fillStyle='#2a2a44';wfCtx.font="8px 'Courier New'";
+    wfCtx.fillStyle='#889392'; wfCtx.font='10px Roboto,sans-serif';
     wfCtx.textAlign='center';
-    wfCtx.fillText(hz>=1000?hz/1000+'k':hz+'',x,PAD.t+GH+14);
+    wfCtx.fillText(hz>=1000?hz/1000+'k':hz+'',x,PAD.t+GH+16);
   });
 }
 
 // ─── RT60 ───
 function drawRT60(){
-  const grid = document.getElementById('rt60-grid');
-  grid.innerHTML='';
+  const container = document.getElementById('rt60-chart-container');
+  container.innerHTML='';
   if(!rt60Values) return;
   const maxT = Math.max(...rt60Values.map(v=>v.t60), IDEAL_RT60_HI*2);
   rt60Values.forEach(({hz,t60,color})=>{
     const pct = Math.min(95, (t60/maxT)*90+5);
     const refPct_lo = (IDEAL_RT60_LO/maxT)*90+5;
     const refPct_hi = (IDEAL_RT60_HI/maxT)*90+5;
-    const refY_lo = 100-refPct_hi; // top of ideal zone
-    const refH    = refPct_hi-refPct_lo;
+    const zoneTop  = 100-refPct_hi;
+    const zoneH    = refPct_hi-refPct_lo;
+
     const col = document.createElement('div');
-    col.className='rt60-band';
+    col.className='rt60-column';
     col.innerHTML=`
-      <div class="rt60-val">${t60}s</div>
-      <div class="rt60-bar-wrap" style="min-height:100px;">
-        <div style="position:absolute;top:${refY_lo}%;height:${refH}%;width:100%;
-          background:#ffcc0011;border-top:1px solid #ffcc0044;border-bottom:1px solid #ffcc0044;"></div>
+      <div class="rt60-val-label">${t60}s</div>
+      <div class="rt60-bar-area">
+        <div class="rt60-ideal-zone" style="top:${zoneTop}%;height:${zoneH}%;"></div>
         <div class="rt60-bar-fill ${color}" style="height:${pct}%;"></div>
       </div>
-      <div class="rt60-hz">${hz>=1000?hz/1000+'k':hz}Hz</div>
+      <div class="rt60-hz-label">${hz>=1000?hz/1000+'k':hz} Hz</div>
     `;
-    grid.appendChild(col);
+    container.appendChild(col);
   });
 }
 
@@ -1007,7 +1412,6 @@ function generateFreqInsights(curve){
   const cards=[];
   const sm=smooth(Array.from(curve),8);
 
-  // Find biggest bass boost
   let bassMax=DB_MIN,bassHz=63;
   for(let i=0;i<=NUM_BANDS;i++){
     if(BANDS[i]>20&&BANDS[i]<250&&sm[i]>bassMax){bassMax=sm[i];bassHz=BANDS[i];}
@@ -1017,31 +1421,31 @@ function generateFreqInsights(curve){
 
   if(bassMax - bassMid > 6){
     cards.push({
-      level:'red',title:'BASS BUILDUP',
+      level:'red',title:'Bass Buildup',
       body:`${Math.round(bassHz)}Hz is ${(bassMax-bassMid).toFixed(1)}dB above average. Likely a room mode. Bass traps in corners will help.`
     });
   } else if(bassMax - bassMid > 3){
     cards.push({
-      level:'yellow',title:'MILD BASS RISE',
+      level:'yellow',title:'Mild Bass Rise',
       body:`Slight excess around ${Math.round(bassHz)}Hz (+${(bassMax-bassMid).toFixed(1)}dB). Common in small rooms — acceptable for most listening.`
     });
   } else {
-    cards.push({level:'green',title:'BASS RESPONSE',body:'Bass region looks reasonably flat. No major room modes detected.'});
+    cards.push({level:'green',title:'Bass Response',body:'Bass region looks reasonably flat. No major room modes detected.'});
   }
 
   const tilt = bassMid - trebleMid;
   if(tilt>10){
-    cards.push({level:'yellow',title:'HIGH ROLLOFF',body:`Treble is ${tilt.toFixed(0)}dB below bass average. Could indicate mic placement or room absorption. Move mic away from walls.`});
+    cards.push({level:'yellow',title:'High-Frequency Rolloff',body:`Treble is ${tilt.toFixed(0)}dB below bass average. Could indicate mic placement or room absorption. Move mic away from walls.`});
   } else if(tilt<-3){
-    cards.push({level:'yellow',title:'BRIGHT ROOM',body:'More treble energy than low-end. Reflective surfaces (glass, bare walls) likely. Consider soft furnishings.'});
+    cards.push({level:'yellow',title:'Bright Room',body:'More treble energy than low-end. Reflective surfaces (glass, bare walls) likely. Consider soft furnishings.'});
   } else {
-    cards.push({level:'green',title:'TONAL BALANCE',body:'Reasonable balance between low and high frequencies.'});
+    cards.push({level:'green',title:'Tonal Balance',body:'Reasonable balance between low and high frequencies.'});
   }
 
   cards.forEach(c=>{
     const div=document.createElement('div');
     div.className=`insight-card ${c.level}`;
-    div.innerHTML=`<div class="ic-title">${c.title}</div>${c.body}`;
+    div.innerHTML=`<div class="insight-title">${c.title}</div><div class="insight-body">${c.body}</div>`;
     container.appendChild(div);
   });
 }
@@ -1053,27 +1457,27 @@ function generateRT60Insights(){
   const avg=rt60Values.reduce((s,v)=>s+v.t60,0)/rt60Values.length;
   const cards=[];
   if(avg < 0.2){
-    cards.push({level:'yellow',title:'VERY DEAD ROOM',body:`Average RT60 ${avg.toFixed(2)}s is below 0.2s. Over-treated or very small. May sound unnatural for music.`});
+    cards.push({level:'yellow',title:'Very Dead Room',body:`Average RT60 ${avg.toFixed(2)}s is below 0.2s. Over-treated or very small. May sound unnatural for music.`});
   } else if(avg < IDEAL_RT60_LO){
-    cards.push({level:'yellow',title:'SLIGHTLY DEAD',body:`RT60 ${avg.toFixed(2)}s is below ideal (0.3–0.5s). Consider reducing absorption, especially broadband panels.`});
+    cards.push({level:'yellow',title:'Slightly Dead',body:`RT60 ${avg.toFixed(2)}s is below ideal (0.3–0.5s). Consider reducing absorption, especially broadband panels.`});
   } else if(avg <= IDEAL_RT60_HI){
-    cards.push({level:'green',title:'GOOD DECAY TIME',body:`Average RT60 ${avg.toFixed(2)}s is in the ideal range for a listening room (0.3–0.5s).`});
+    cards.push({level:'green',title:'Good Decay Time',body:`Average RT60 ${avg.toFixed(2)}s is in the ideal range for a listening room (0.3–0.5s).`});
   } else if(avg < 0.8){
-    cards.push({level:'yellow',title:'SLIGHTLY LIVE',body:`RT60 ${avg.toFixed(2)}s is a bit long. Soft furnishings, rugs, or acoustic panels will help bring it down.`});
+    cards.push({level:'yellow',title:'Slightly Live',body:`RT60 ${avg.toFixed(2)}s is a bit long. Soft furnishings, rugs, or acoustic panels will help bring it down.`});
   } else {
-    cards.push({level:'red',title:'VERY LIVE ROOM',body:`RT60 ${avg.toFixed(2)}s is too long for accurate listening. Significant absorption needed — panels, heavy curtains, bookshelves.`});
+    cards.push({level:'red',title:'Very Live Room',body:`RT60 ${avg.toFixed(2)}s is too long for accurate listening. Significant absorption needed — panels, heavy curtains, bookshelves.`});
   }
 
   const bassRT = rt60Values.filter(v=>v.hz<=250).map(v=>v.t60);
   const bassAvg= bassRT.reduce((s,v)=>s+v,0)/bassRT.length;
   if(bassAvg > avg*1.5){
-    cards.push({level:'red',title:'BASS RINGING',body:`Low frequencies decay ${((bassAvg/avg-1)*100).toFixed(0)}% longer than mids. Bass traps in room corners are strongly recommended.`});
+    cards.push({level:'red',title:'Bass Ringing',body:`Low frequencies decay ${((bassAvg/avg-1)*100).toFixed(0)}% longer than mids. Bass traps in room corners are strongly recommended.`});
   }
 
   cards.forEach(c=>{
     const div=document.createElement('div');
     div.className=`insight-card ${c.level}`;
-    div.innerHTML=`<div class="ic-title">${c.title}</div>${c.body}`;
+    div.innerHTML=`<div class="insight-title">${c.title}</div><div class="insight-body">${c.body}</div>`;
     container.appendChild(div);
   });
 }
@@ -1083,7 +1487,6 @@ function generateWaterfallInsights(){
   container.innerHTML='';
   if(!waterfallData) return;
   const cards=[];
-  // Check how many steps the 63Hz band stays above -20dB relative to peak
   const band63 = Math.round(Math.log10(63/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ)*NUM_BANDS);
   const first63 = waterfallData[0][band63];
   let decay63 = waterfallData.length;
@@ -1092,84 +1495,101 @@ function generateWaterfallInsights(){
   }
   const decayMs63 = decay63*(500/waterfallData.length);
   if(decayMs63>350){
-    cards.push({level:'red',title:'SLOW BASS DECAY',body:`63Hz takes ~${Math.round(decayMs63)}ms to decay 20dB. Heavy bass trapping needed to clean up the low end.`});
+    cards.push({level:'red',title:'Slow Bass Decay',body:`63Hz takes ~${Math.round(decayMs63)}ms to decay 20dB. Heavy bass trapping needed to clean up the low end.`});
   } else if(decayMs63>200){
-    cards.push({level:'yellow',title:'BASS DECAY',body:`63Hz decays in ~${Math.round(decayMs63)}ms. Moderate. Corner bass traps would improve tightness.`});
+    cards.push({level:'yellow',title:'Bass Decay',body:`63Hz decays in ~${Math.round(decayMs63)}ms. Moderate. Corner bass traps would improve tightness.`});
   } else {
-    cards.push({level:'green',title:'BASS DECAY',body:`63Hz decays quickly (~${Math.round(decayMs63)}ms). Bass energy is well controlled.`});
+    cards.push({level:'green',title:'Bass Decay',body:`63Hz decays quickly (~${Math.round(decayMs63)}ms). Bass energy is well controlled.`});
   }
   cards.forEach(c=>{
     const div=document.createElement('div');
     div.className=`insight-card ${c.level}`;
-    div.innerHTML=`<div class="ic-title">${c.title}</div>${c.body}`;
+    div.innerHTML=`<div class="insight-title">${c.title}</div><div class="insight-body">${c.body}</div>`;
     container.appendChild(div);
   });
 }
 
-function drawAllResults(){
-  drawFreqResponse();
-  drawRT60();
-  drawWaterfall();
-  generateFreqInsights(freqCurve);
-  generateRT60Insights();
-  generateWaterfallInsights();
-  document.getElementById('result-sub').textContent =
-    `measurement complete · ${new Date().toLocaleTimeString()}`;
-}
-
-// ─── Tabs ───
-document.querySelectorAll('.tab').forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    document.querySelectorAll('.tab-panel').forEach(p=>{
-      p.style.display='none';p.classList.add('hidden');
-    });
-    const id='tab-'+tab.dataset.tab;
-    const panel=document.getElementById(id);
-    panel.style.display='flex';panel.classList.remove('hidden');
-    // Redraw on tab switch (size may have changed)
-    if(tab.dataset.tab==='freq') setTimeout(drawFreqResponse,30);
-    if(tab.dataset.tab==='rt60') setTimeout(drawRT60,30);
-    if(tab.dataset.tab==='waterfall') setTimeout(drawWaterfall,30);
-  });
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+document.getElementById('btn-goto-rt60').addEventListener('click',()=>{
+  showScreen('result-rt60');
 });
 
-// ─── Export ───
-document.getElementById('btn-export-png').addEventListener('click',()=>{
-  const activeTab = document.querySelector('.tab.active').dataset.tab;
-  let cvs;
-  if(activeTab==='freq')      cvs=freqCanvas;
-  else if(activeTab==='rt60'){
-    // Render RT60 grid to a temporary canvas
-    const tmp=document.createElement('canvas');
-    tmp.width=600;tmp.height=300;
-    const tc=tmp.getContext('2d');
-    tc.fillStyle='#07070d';tc.fillRect(0,0,600,300);
-    tc.fillStyle='#c0c0d8';tc.font="12px 'Courier New'";tc.textAlign='center';
-    tc.fillText('RT60 per octave band',300,20);
-    if(rt60Values){
-      const bw=600/rt60Values.length;
-      const maxT=Math.max(...rt60Values.map(v=>v.t60),1);
-      rt60Values.forEach(({hz,t60,color},i)=>{
-        const x=i*bw+10;const w=bw-12;
-        const h=(t60/maxT)*220;const y=260-h;
-        tc.fillStyle=color==='green'?'#44ffaa':color==='yellow'?'#ffcc00':'#ff5050';
-        tc.fillRect(x,y,w,h);
-        tc.fillStyle='#c0c0d8';tc.font="9px 'Courier New'";tc.textAlign='center';
-        tc.fillText(t60+'s',x+w/2,y-4);
-        tc.fillText(hz>=1000?hz/1000+'k':hz,x+w/2,275);
-      });
-    }
-    cvs=tmp;
-  }
-  else cvs=wfCanvas;
+document.getElementById('btn-goto-waterfall').addEventListener('click',()=>{
+  showScreen('result-waterfall');
+});
+
+document.getElementById('btn-rt60-back').addEventListener('click',()=>{
+  showScreen('result-freq');
+});
+
+document.getElementById('btn-wf-back').addEventListener('click',()=>{
+  showScreen('result-rt60');
+});
+
+document.getElementById('btn-redo').addEventListener('click',()=>{
+  freqCurve=null; rt60Values=null; waterfallData=null;
+  if(micStream) micStream.getTracks().forEach(t=>t.stop());
+  micStream=null; analyser=null; micSource=null;
+  if(audioCtx){audioCtx.close();audioCtx=null;}
+  // Reset welcome screen state
+  document.getElementById('btn-mic-req').classList.remove('hidden');
+  document.getElementById('btn-start').classList.add('hidden');
+  document.getElementById('spl-num').textContent='— dB';
+  document.getElementById('spl-bar').style.width='0%';
+  document.getElementById('spl-status').textContent='Waiting for microphone permission';
+  document.getElementById('spl-status').style.color='var(--on-surface-variant)';
+  document.getElementById('noise-warn').classList.remove('visible');
+  showScreen('welcome');
+});
+
+// ═══════════════════════════════════════════════
+//  EXPORT HANDLERS
+// ═══════════════════════════════════════════════
+document.getElementById('btn-export-freq-png').addEventListener('click',()=>{
+  if(!freqCurve) return;
   const a=document.createElement('a');
-  a.download=`room-${activeTab}-${Date.now()}.png`;
-  a.href=cvs.toDataURL('image/png');a.click();
+  a.download=`room-freq-${Date.now()}.png`;
+  a.href=freqCanvas.toDataURL('image/png');
+  a.click();
 });
 
-document.getElementById('btn-export-csv').addEventListener('click',()=>{
+document.getElementById('btn-export-rt60-png').addEventListener('click',()=>{
+  const tmp=document.createElement('canvas');
+  tmp.width=560; tmp.height=280;
+  const tc=tmp.getContext('2d');
+  tc.fillStyle='#191C1C'; tc.fillRect(0,0,560,280);
+  tc.fillStyle='#E0E3E3'; tc.font='13px Roboto,sans-serif'; tc.textAlign='center';
+  tc.fillText('RT60 per Octave Band',280,22);
+  if(rt60Values){
+    const bw=560/rt60Values.length;
+    const maxT=Math.max(...rt60Values.map(v=>v.t60),1);
+    rt60Values.forEach(({hz,t60,color},i)=>{
+      const x=i*bw+10; const w=bw-12;
+      const h=(t60/maxT)*210; const y=250-h;
+      tc.fillStyle=color==='green'?'#6EF0C4':color==='yellow'?'#FFB77A':'#FFB4AB';
+      tc.fillRect(x,y,w,h);
+      tc.fillStyle='#E0E3E3'; tc.font='10px Roboto,sans-serif'; tc.textAlign='center';
+      tc.fillText(t60+'s',x+w/2,y-4);
+      tc.fillText(hz>=1000?hz/1000+'k':hz,x+w/2,265);
+    });
+  }
+  const a=document.createElement('a');
+  a.download=`room-rt60-${Date.now()}.png`;
+  a.href=tmp.toDataURL('image/png');
+  a.click();
+});
+
+document.getElementById('btn-export-wf-png').addEventListener('click',()=>{
+  if(!waterfallData) return;
+  const a=document.createElement('a');
+  a.download=`room-waterfall-${Date.now()}.png`;
+  a.href=wfCanvas.toDataURL('image/png');
+  a.click();
+});
+
+document.getElementById('btn-export-wf-csv').addEventListener('click',()=>{
   if(!freqCurve) return;
   let csv='frequency_hz,magnitude_db\n';
   freqCurve.forEach((db,i)=>{
@@ -1185,30 +1605,29 @@ document.getElementById('btn-export-csv').addEventListener('click',()=>{
   a.click();
 });
 
-// ─── Redo ───
-document.getElementById('btn-redo').addEventListener('click',()=>{
-  freqCurve=null;rt60Values=null;waterfallData=null;
-  if(micStream) micStream.getTracks().forEach(t=>t.stop());
-  micStream=null;analyser=null;micSource=null;
-  if(audioCtx){audioCtx.close();audioCtx=null;}
-  // Reset mic check screen
-  document.getElementById('btn-mic-req').classList.remove('hidden');
-  document.getElementById('btn-start').classList.add('hidden');
-  document.getElementById('spl-num').textContent='— dB';
-  document.getElementById('spl-bar').style.width='0%';
-  document.getElementById('spl-status').textContent='waiting for mic permission…';
-  document.getElementById('spl-status').style.color='var(--text-dim)';
-  document.getElementById('noise-warn').classList.add('hidden');
-  showScreen('mic');
-});
-
-// ─── Resize ───
+// ═══════════════════════════════════════════════
+//  WINDOW RESIZE
+// ═══════════════════════════════════════════════
 window.addEventListener('resize',()=>{
-  if(document.getElementById('screen-results').classList.contains('active')){
-    drawAllResults();
+  if(currentScreen==='result-freq'){
+    const card=document.getElementById('freq-canvas-card');
+    freqCanvas.width=card.clientWidth;
+    freqCanvas.height=card.clientHeight;
+    drawFreqResponse();
   }
-  if(document.getElementById('screen-capture').classList.contains('active')){
-    resizeCapCanvas();
+  if(currentScreen==='result-waterfall'){
+    const card=document.getElementById('wf-canvas-card');
+    wfCanvas.width=card.clientWidth;
+    wfCanvas.height=card.clientHeight;
+    drawWaterfall();
+  }
+  if(currentScreen==='result-rt60'){
+    drawRT60();
+  }
+  if(currentScreen==='capture'){
+    const cc=document.getElementById('capture-canvas');
+    cc.width=cc.parentElement.clientWidth;
+    cc.height=cc.parentElement.clientHeight;
   }
 });
 </script>
