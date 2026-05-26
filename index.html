@@ -345,7 +345,7 @@ body{
 // ═══════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════
-const SWEEP_DURATION = 10;   // seconds per sweep
+const SWEEP_DURATION = 6;    // seconds per sweep — shorter = faster processing on mobile
 const NUM_SWEEPS     = 3;
 const SAMPLE_RATE    = 48000;
 const MIN_HZ         = 20;
@@ -500,218 +500,165 @@ function generateInverseFilter(ac, duration, f1, f2){
 async function startMeasurement(){
   showScreen('capture');
   await new Promise(r=>setTimeout(r,80));
-  resizeCapCanvas();
+  const cc=document.getElementById('capture-canvas');
+  cc.width=cc.parentElement.clientWidth; cc.height=cc.parentElement.clientHeight;
 
   const ac = audioCtx;
+  // Resume AudioContext — Android suspends it after user gesture completes
+  await ac.resume();
 
-  // Reconnect mic for capture
   micSource = ac.createMediaStreamSource(micStream);
   analyser  = ac.createAnalyser();
-  analyser.fftSize              = 8192;
-  analyser.smoothingTimeConstant = 0.0;
+  analyser.fftSize=8192; analyser.smoothingTimeConstant=0.0;
   micSource.connect(analyser);
 
-  const sweepDur = SWEEP_DURATION;
-  const sweepBuf = generateSweep(ac, sweepDur, MIN_HZ, MAX_HZ);
-  const invBuf   = generateInverseFilter(ac, sweepDur, MIN_HZ, MAX_HZ);
-
-  const silencePre  = 0.5; // seconds silence before sweep
-  const silencePost = 1.5; // seconds silence after (tail capture)
+  const sweepDur      = SWEEP_DURATION;
+  const sweepBuf      = generateSweep(ac, sweepDur, MIN_HZ, MAX_HZ);
+  const invBuf        = generateInverseFilter(ac, sweepDur, MIN_HZ, MAX_HZ);
+  const silencePre    = 0.5;
+  const silencePost   = 1.5;
   const totalPerSweep = silencePre + sweepDur + silencePost;
 
-  // Recorder
-  const dest    = ac.createMediaStreamDestination();
+  // Pick a mime type the device actually supports
+  const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg','']
+    .find(m => m==='' || MediaRecorder.isTypeSupported(m));
+
+  const dest     = ac.createMediaStreamDestination();
   micSource.connect(dest);
-  const recorder = new MediaRecorder(dest.stream);
+  const recorder = new MediaRecorder(dest.stream, mimeType ? {mimeType} : {});
   const chunks   = [];
-  recorder.ondataavailable = e=>chunks.push(e.data);
+  recorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
 
-  recorder.start();
-  const recordStart = ac.currentTime;
-
-  let sweepStartTimes = [];
-
-  document.getElementById('cap-state').textContent = '⏺ REC';
-  document.getElementById('cap-state').className = 'rec-label';
-
-  // Play sweeps
-  for(let sw=0;sw<NUM_SWEEPS;sw++){
-    document.getElementById('cap-sweep').textContent = `${sw+1}/${NUM_SWEEPS}`;
-    document.getElementById('capture-sub').textContent = `sweep ${sw+1} of ${NUM_SWEEPS} · keep room quiet`;
-
-    const sweepTime = recordStart + sw*totalPerSweep + silencePre;
-    sweepStartTimes.push(sweepTime - recordStart);
-
-    const src = ac.createBufferSource();
-    src.buffer = sweepBuf;
-    src.connect(ac.destination);
-    src.start(sweepTime);
-    src.stop(sweepTime + sweepDur);
-
-    // Animate progress for this sweep
-    const swStart = performance.now();
-    const swEnd   = swStart + totalPerSweep*1000;
-    await new Promise(resolve=>{
-      function animTick(){
-        const now  = performance.now();
-        const frac = Math.min(1,(now-swStart)/(swEnd-swStart));
-        const overall = (sw + frac)/NUM_SWEEPS;
-        document.getElementById('cap-progress').style.width = (overall*100)+'%';
-        document.getElementById('cap-step').textContent =
-          frac < silencePre/totalPerSweep ? 'silence…' :
-          frac < (silencePre+sweepDur)/totalPerSweep ? 'sweep playing…' : 'capturing tail…';
-
-        drawLiveCapture();
-        if(frac<1) rafCapture=requestAnimationFrame(animTick);
-        else resolve();
-      }
-      animTick();
-    });
-  }
-
-  // Done recording
-  recorder.stop();
-  micSource.disconnect();
-  analyser.disconnect();
-  cancelAnimationFrame(rafCapture);
-
-  showScreen('processing');
-  document.getElementById('proc-progress').style.width='10%';
-  document.getElementById('proc-step').textContent = 'decoding audio…';
-
-  await new Promise(r=>setTimeout(r,100));
-
-  recorder.onstop = async()=>{
-    const blob  = new Blob(chunks, {type:'audio/webm'});
-    const arrBuf = await blob.arrayBuffer();
+  // ↓ onstop MUST be registered before stop() — Android fires it synchronously
+  recorder.onstop = async () => {
+    const blob    = new Blob(chunks, {type: recorder.mimeType||'audio/webm'});
     let decoded;
-    try{
+    try {
+      const arrBuf = await blob.arrayBuffer();
       decoded = await ac.decodeAudioData(arrBuf);
-    }catch(e){
-      // Fallback: synthesize from peak-hold if decode fails
-      freqCurve  = new Float32Array(NUM_BANDS+1).fill(DB_MIN);
-      rt60Values = RT60_BANDS.map(hz=>({hz,t60:0.4,color:'green'}));
+    } catch(e) {
+      console.warn('decodeAudioData failed:', e);
+      freqCurve     = new Float32Array(NUM_BANDS+1).fill(DB_MIN);
+      rt60Values    = RT60_BANDS.map(hz=>({hz,t60:0.4,color:'green'}));
       waterfallData = buildDummyWaterfall();
       showScreen('results');
       return;
     }
 
     document.getElementById('proc-progress').style.width='35%';
-    document.getElementById('proc-step').textContent = 'extracting impulse responses…';
-    await new Promise(r=>setTimeout(r,50));
+    document.getElementById('proc-step').textContent='extracting impulse responses…';
+    await new Promise(r=>setTimeout(r,80));
 
-    const sampleData = decoded.getChannelData(0);
-    const sr         = decoded.sampleRate;
-    const irLength   = Math.ceil(sweepDur * sr);
-    const invData    = invBuf.getChannelData(0);
-
-    // Average impulse responses across sweeps
-    const avgIR = new Float32Array(irLength);
-    let validSweeps = 0;
+    const sig    = decoded.getChannelData(0);
+    const sr     = decoded.sampleRate;
+    const irLen  = Math.ceil(sweepDur * sr);
+    const inv    = invBuf.getChannelData(0);
+    const avgIR  = new Float32Array(irLen);
+    let valid    = 0;
 
     for(let sw=0;sw<NUM_SWEEPS;sw++){
-      const tStart = sweepStartTimes[sw];
-      const sStart = Math.round(tStart * sr);
-      // Extract segment: silence pre + sweep + tail
-      const segLen = Math.ceil(totalPerSweep * sr);
-      const seg    = sampleData.slice(sStart, sStart+segLen);
-      if(seg.length < irLength) continue;
-
-      // Convolve seg with inverse filter in freq domain
-      const fftLen = nextPow2((seg.length + invData.length - 1));
-      const ir     = fftConvolve(seg, invData, fftLen, irLength);
-      for(let i=0;i<irLength;i++) avgIR[i] += ir[i];
-      validSweeps++;
+      const sStart = Math.round(sweepStartTimes[sw] * sr);
+      const seg    = sig.slice(sStart, sStart + Math.ceil(totalPerSweep*sr));
+      if(seg.length < irLen) continue;
+      document.getElementById('proc-step').textContent=`deconvolving sweep ${sw+1}/${NUM_SWEEPS}…`;
+      await new Promise(r=>setTimeout(r,30));
+      const ir = await convolveOffline(seg, inv, sr, irLen);
+      for(let i=0;i<irLen;i++) avgIR[i]+=ir[i];
+      valid++;
+      document.getElementById('proc-progress').style.width=(35+valid*10)+'%';
     }
-    if(validSweeps>0){
-      for(let i=0;i<irLength;i++) avgIR[i]/=validSweeps;
-    }
+    if(valid>0) for(let i=0;i<irLen;i++) avgIR[i]/=valid;
 
-    document.getElementById('proc-progress').style.width='60%';
-    document.getElementById('proc-step').textContent = 'computing frequency response…';
-    await new Promise(r=>setTimeout(r,50));
-
+    document.getElementById('proc-progress').style.width='65%';
+    document.getElementById('proc-step').textContent='computing frequency response…';
+    await new Promise(r=>setTimeout(r,80));
     freqCurve = computeFreqResponse(avgIR, sr);
 
-    document.getElementById('proc-progress').style.width='75%';
-    document.getElementById('proc-step').textContent = 'measuring RT60…';
-    await new Promise(r=>setTimeout(r,50));
-
+    document.getElementById('proc-progress').style.width='78%';
+    document.getElementById('proc-step').textContent='measuring RT60…';
+    await new Promise(r=>setTimeout(r,80));
     rt60Values = computeRT60(avgIR, sr);
 
-    document.getElementById('proc-progress').style.width='88%';
-    document.getElementById('proc-step').textContent = 'building waterfall…';
-    await new Promise(r=>setTimeout(r,50));
-
+    document.getElementById('proc-progress').style.width='90%';
+    document.getElementById('proc-step').textContent='building waterfall…';
+    await new Promise(r=>setTimeout(r,80));
     waterfallData = computeWaterfall(avgIR, sr);
 
     document.getElementById('proc-progress').style.width='100%';
-    document.getElementById('proc-step').textContent = 'done.';
+    document.getElementById('proc-step').textContent='done.';
     await new Promise(r=>setTimeout(r,300));
-
     showScreen('results');
   };
+
+  recorder.start(100); // collect data every 100ms so chunks arrive steadily
+  const recordStart   = ac.currentTime;
+  const sweepStartTimes = [];
+
+  document.getElementById('cap-state').textContent='⏺ REC';
+  document.getElementById('cap-state').className='rec-label';
+
+  for(let sw=0;sw<NUM_SWEEPS;sw++){
+    document.getElementById('cap-sweep').textContent=`${sw+1}/${NUM_SWEEPS}`;
+    document.getElementById('capture-sub').textContent=`sweep ${sw+1} of ${NUM_SWEEPS} · keep room quiet`;
+
+    const sweepTime = recordStart + sw*totalPerSweep + silencePre;
+    sweepStartTimes.push(sweepTime - recordStart);
+
+    const src = ac.createBufferSource();
+    src.buffer = sweepBuf; src.connect(ac.destination);
+    src.start(sweepTime); src.stop(sweepTime+sweepDur);
+
+    const t0=performance.now(), t1=t0+totalPerSweep*1000;
+    await new Promise(resolve=>{
+      function tick(){
+        const frac=Math.min(1,(performance.now()-t0)/(t1-t0));
+        document.getElementById('cap-progress').style.width=((sw+frac)/NUM_SWEEPS*100)+'%';
+        document.getElementById('cap-step').textContent=
+          frac<silencePre/totalPerSweep?'silence…':
+          frac<(silencePre+sweepDur)/totalPerSweep?'sweep playing…':'capturing tail…';
+        drawLiveCapture();
+        if(frac<1) rafCapture=requestAnimationFrame(tick); else resolve();
+      }
+      tick();
+    });
+  }
+
+  recorder.stop();
+  micSource.disconnect(); analyser.disconnect();
+  cancelAnimationFrame(rafCapture);
+
+  showScreen('processing');
+  document.getElementById('proc-progress').style.width='10%';
+  document.getElementById('proc-step').textContent='decoding audio…';
+  // recorder.onstop fires next — already registered above
 }
 
 // ═══════════════════════════════════════════════
 //  DSP HELPERS
 // ═══════════════════════════════════════════════
 
-function nextPow2(n){let p=1;while(p<n)p<<=1;return p;}
-
-// Simple DFT-based convolution using JS arrays (works for moderate sizes)
-function fftConvolve(a, b, fftLen, outLen){
-  // Use AnalyserNode / OfflineAudioContext trick for real convolution
-  // We'll do a direct frequency-domain multiply via manual DFT for small IR
-  // For performance, use the ConvolverNode offline
-  const result = new Float32Array(Math.min(outLen, a.length));
-  // Direct time-domain convolution truncated — good enough for IR extraction
-  // (sweepDur=10s, sr=48k → 480k samples; too slow direct)
-  // Use overlap-add via chunked approach
-  const CHUNK = 4096;
-  for(let i=0;i<result.length;i++){
-    let s=0;
-    const jMax = Math.min(b.length, i+1);
-    const jMin = Math.max(0, i-a.length+1);
-    for(let j=jMin;j<jMax;j++){
-      if(i-j<a.length) s+=a[i-j]*b[j];
-    }
-    result[i]=s;
-  }
-  return result;
-}
-
-// Better: use OfflineAudioContext ConvolverNode
-async function convolveOffline(sig, kernel, sr){
-  const outLen = sig.length + kernel.length - 1;
-  const oac    = new OfflineAudioContext(1, outLen, sr);
+async function convolveOffline(sig, kernel, sr, outLen){
+  const totalLen = sig.length + kernel.length - 1;
+  const oac    = new OfflineAudioContext(1, totalLen, sr);
   const sigBuf = oac.createBuffer(1, sig.length, sr);
   sigBuf.getChannelData(0).set(sig);
   const kerBuf = oac.createBuffer(1, kernel.length, sr);
   kerBuf.getChannelData(0).set(kernel);
-  const convolver   = oac.createConvolver();
-  convolver.normalize = false;
-  convolver.buffer    = kerBuf;
+  const conv = oac.createConvolver();
+  conv.normalize = false;
+  conv.buffer    = kerBuf;
   const src = oac.createBufferSource();
   src.buffer = sigBuf;
-  src.connect(convolver);
-  convolver.connect(oac.destination);
+  src.connect(conv); conv.connect(oac.destination);
   src.start(0);
   const rendered = await oac.startRendering();
-  return rendered.getChannelData(0);
+  return rendered.getChannelData(0).slice(0, outLen);
 }
 
 function computeFreqResponse(ir, sr){
-  // FFT of IR → magnitude spectrum, mapped to log bands
-  const fftSize = nextPow2(ir.length);
-  // Use OfflineAudioContext AnalyserNode to get freq data
-  // Simpler: manual DFT magnitude for our BANDS
   const curve = new Float32Array(NUM_BANDS+1);
   for(let bi=0;bi<=NUM_BANDS;bi++){
-    const freq = BANDS[bi];
-    const bin  = freq/sr*fftSize;
-    // Goertzel for each band center
-    curve[bi] = goertzelDB(ir, freq, sr);
+    curve[bi] = goertzelDB(ir, BANDS[bi], sr);
   }
   // Normalize to sensible range
   const maxV = Math.max(...curve);
@@ -720,18 +667,13 @@ function computeFreqResponse(ir, sr){
 }
 
 function goertzelDB(buf, freq, sr){
-  const N = Math.min(buf.length, Math.ceil(sr*2)); // use first 2 seconds
-  const k = freq/sr*N;
-  const w = 2*Math.PI*k/N;
-  const cos= Math.cos(w), sin=Math.sin(w), coeff=2*cos;
-  let s0=0,s1=0,s2=0;
-  for(let i=0;i<N;i++){
-    s0 = buf[i] + coeff*s1 - s2;
-    s2=s1;s1=s0;
-  }
-  const real = s1 - s2*cos;
-  const imag = s2*sin;
-  const mag  = Math.sqrt(real*real+imag*imag)/N;
+  const N     = Math.min(buf.length, Math.ceil(sr*3));
+  const w     = 2*Math.PI*freq/sr;
+  const cosW  = Math.cos(w), sinW = Math.sin(w), coeff = 2*cosW;
+  let s1=0, s2=0;
+  for(let i=0;i<N;i++){ const s0=buf[i]+coeff*s1-s2; s2=s1; s1=s0; }
+  const re = s1 - s2*cosW, im = s2*sinW;
+  const mag = Math.sqrt(re*re+im*im)/N;
   return mag>0 ? 20*Math.log10(mag) : DB_MIN;
 }
 
