@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <meta name="color-scheme" content="dark"/>
 <meta name="theme-color" content="#0F1416"/>
 <title>Room Analyzer</title>
@@ -12,7 +12,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{color-scheme:light;}
-html,body{height:100%;overflow:hidden;}
+html,body{height:100%;height:100dvh;overflow:hidden;}
 
 :root{
   --bg:#F4FAF9;
@@ -41,6 +41,7 @@ body{
   font-family:'Roboto',sans-serif;
   color:var(--on-surface);
   height:100vh;
+  height:100dvh;
   display:flex;
   flex-direction:column;
   overflow:hidden;
@@ -507,9 +508,9 @@ body{
 .rt60-ideal-zone{
   position:absolute;
   left:0;right:0;
-  background:rgba(0,107,99,0.07);
-  border-top:1px solid rgba(0,107,99,0.30);
-  border-bottom:1px solid rgba(0,107,99,0.30);
+  background:rgba(0,107,99,0.11);
+  border-top:2px dashed rgba(0,107,99,0.55);
+  border-bottom:2px dashed rgba(0,107,99,0.55);
 }
 .rt60-bar-fill{
   width:100%;
@@ -556,6 +557,12 @@ body{
   }
   .canvas-card{min-height:300px;}
 }
+
+/* ── CHART LEGEND (external, below canvas) ── */
+.chart-wrap{display:flex;flex-direction:column;gap:8px;}
+.chart-legend{display:flex;flex-direction:row;flex-wrap:wrap;gap:16px;padding:0 6px;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--on-surface-variant);}
+.legend-swatch{width:24px;height:0;flex-shrink:0;}
 
 /* ── PEQ TABLE ── */
 .peq-note{font-size:13px;color:var(--on-surface-variant);line-height:1.5;}
@@ -695,8 +702,21 @@ body{
   </div>
 
   <div class="screen-body">
-    <div class="canvas-card" id="freq-canvas-card" style="min-height:220px;">
-      <canvas id="freq-canvas"></canvas>
+    <div class="chart-wrap">
+      <div class="canvas-card" id="freq-canvas-card" style="min-height:220px;">
+        <canvas id="freq-canvas"></canvas>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item">
+          <span class="legend-swatch" style="border-top:1.5px dashed rgba(120,80,0,0.65)"></span>Harman target
+        </span>
+        <span class="legend-item">
+          <span class="legend-swatch" style="border-top:2.5px solid #006B63"></span>Smoothed
+        </span>
+        <span class="legend-item">
+          <span class="legend-swatch" style="border-top:1.5px solid rgba(0,107,99,0.4)"></span>Raw
+        </span>
+      </div>
     </div>
 
     <div class="section-header">Insights</div>
@@ -724,7 +744,12 @@ body{
     <div class="card">
       <div class="rt60-chart-container" id="rt60-chart-container"></div>
     </div>
-    <div class="rt60-legend-note">Teal band = ideal RT60 for a listening room (0.3 – 0.5 s)</div>
+    <div class="rt60-legend-note">
+      <span style="color:#4ac88a">■</span> Below ideal &nbsp;
+      <span style="color:#006C4E">■</span> Ideal 0.3–0.5s &nbsp;
+      <span style="color:#C38400">■</span> Above ideal &nbsp;
+      <span style="color:#BA1A1A">■</span> Well above (&gt;1s) &nbsp;·&nbsp; dashed band = sweet zone
+    </div>
     <div class="section-header">Insights</div>
     <div class="insights" id="rt60-insights"></div>
   </div>
@@ -748,8 +773,18 @@ body{
   </div>
 
   <div class="screen-body">
-    <div class="canvas-card" id="corr-canvas-card" style="min-height:220px;">
-      <canvas id="corr-canvas"></canvas>
+    <div class="chart-wrap">
+      <div class="canvas-card" id="corr-canvas-card" style="min-height:220px;">
+        <canvas id="corr-canvas"></canvas>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item">
+          <span class="legend-swatch" style="border-top:1.5px dashed rgba(120,80,0,0.65)"></span>Harman target
+        </span>
+        <span class="legend-item">
+          <span class="legend-swatch" style="border-top:2.5px solid #006B63"></span>Predicted (corrected)
+        </span>
+      </div>
     </div>
 
     <div class="section-header">Parametric EQ · corrections below 120 Hz</div>
@@ -795,11 +830,19 @@ function fToX(f,gw){
 }
 
 // Harman in-room target curve (dB relative to 0 at 500 Hz–2 kHz midband)
+// Harman in-room preferred response (Olive/Welti 2013):
+// ~+6.6 dB low shelf below 105 Hz, gentle -1 dB/octave treble tilt above 2 kHz.
+// Normalized so 500–1 kHz ≈ 0 dB.
 const HARMAN_PTS=[
-  [20,8],[30,7],[40,6],[60,4],[80,3],[100,2.5],[150,1.5],
-  [200,1],[300,0.5],[500,0],[1000,0],[2000,0],
-  [3000,-0.5],[4000,-1],[6000,-2.5],[8000,-4],
-  [10000,-5.5],[16000,-7],[20000,-8]
+  // Bass shelf — relatively flat +6.5 dB below ~80 Hz
+  [20,6.5],[30,6.5],[40,6.5],[50,6.4],[63,6.2],[80,5.7],
+  // Transition region: shelf rolls down to flat midrange around 100–400 Hz
+  [100,4.9],[125,3.8],[160,2.5],[200,1.6],[250,0.9],[315,0.4],[400,0.1],
+  // Flat reference
+  [500,0],[630,0],[1000,-0.4],
+  // Gentle treble tilt: roughly -1 dB/octave from 1 kHz
+  [1600,-1.0],[2000,-1.4],[3150,-2.2],[4000,-2.8],[5000,-3.4],
+  [6300,-4.0],[8000,-4.7],[10000,-5.4],[16000,-6.5],[20000,-7.2]
 ];
 function harmanAt(hz){
   const p=HARMAN_PTS;
@@ -1230,7 +1273,7 @@ function drawLiveCapture(){
 // ═══════════════════════════════════════════════
 //  RESULTS DRAWING
 // ═══════════════════════════════════════════════
-const PAD={l:42,r:10,t:16,b:28};
+const PAD={l:52,r:10,t:22,b:40};
 
 function G(canvas){
   const W=canvas.width, H=canvas.height;
@@ -1239,28 +1282,46 @@ function G(canvas){
 
 function drawGrid(ctx,canvas){
   const{W,H,GW,GH}=G(canvas);
-  ctx.fillStyle='#FFFFFF'; ctx.fillRect(0,0,W,H);
-  // horizontal dB gridlines
+  ctx.fillStyle='#FAFAFA'; ctx.fillRect(0,0,W,H);
+  // chart plot area background
+  ctx.fillStyle='#FFFFFF'; ctx.fillRect(PAD.l,PAD.t,GW,GH);
+
+  // ── horizontal dB gridlines + labels ──
   DB_GRID.forEach(db=>{
     const y=PAD.t+GH-((db-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(y<PAD.t||y>PAD.t+GH) return;
-    ctx.strokeStyle='rgba(0,0,0,0.08)'; ctx.lineWidth=1;
+    ctx.strokeStyle='rgba(0,0,0,0.11)'; ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
     ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(PAD.l+GW,y); ctx.stroke();
+    ctx.setLineDash([]);
     ctx.fillStyle='#3F4948'; ctx.font='bold 12px Roboto,sans-serif';
-    ctx.textAlign='right'; ctx.fillText(db,PAD.l-5,y+4);
+    ctx.textAlign='right'; ctx.fillText(db,PAD.l-7,y+4);
   });
-  // vertical Hz gridlines
+
+  // ── vertical Hz gridlines + labels ──
   OCT_LABELS.forEach(({hz,l})=>{
     const x=PAD.l+fToX(hz,GW);
     const maj=hz===100||hz===1000||hz===10000;
-    ctx.strokeStyle=maj?'rgba(0,0,0,0.12)':'rgba(0,0,0,0.06)'; ctx.lineWidth=maj?1:0.7;
+    ctx.strokeStyle=maj?'rgba(0,0,0,0.18)':'rgba(0,0,0,0.07)';
+    ctx.lineWidth=maj?1:0.8;
+    if(!maj){ctx.setLineDash([2,3]);}
     ctx.beginPath(); ctx.moveTo(x,PAD.t); ctx.lineTo(x,PAD.t+GH); ctx.stroke();
+    ctx.setLineDash([]);
     ctx.fillStyle=maj?'#191C1C':'#6F7978';
-    ctx.font=`${maj?'bold 12':'11'}px Roboto,sans-serif`; ctx.textAlign='center';
-    ctx.fillText(l,x,PAD.t+GH+18);
+    ctx.font=`${maj?'bold 13':'11'}px Roboto,sans-serif`;
+    ctx.textAlign='center'; ctx.fillText(l,x,PAD.t+GH+16);
   });
-  // border
-  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=1;
+
+  // ── axis titles ──
+  ctx.fillStyle='#6F7978'; ctx.font='11px Roboto,sans-serif';
+  // "dB" rotated on left
+  ctx.save(); ctx.translate(11,PAD.t+GH/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.fillText('dB',0,0); ctx.restore();
+  // "Hz" at bottom right
+  ctx.textAlign='right'; ctx.fillText('Hz',PAD.l+GW,PAD.t+GH+30);
+
+  // ── border ──
+  ctx.strokeStyle='rgba(0,0,0,0.22)'; ctx.lineWidth=1;
   ctx.strokeRect(PAD.l,PAD.t,GW,GH);
 }
 
@@ -1295,7 +1356,7 @@ function drawCurve(ctx,canvas,vals,color,fillAlpha,lw){
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   });
   ctx.strokeStyle=color; ctx.lineWidth=lw||1.5;
-  ctx.shadowColor=color; ctx.shadowBlur=5; ctx.stroke(); ctx.shadowBlur=0;
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -1348,26 +1409,6 @@ function drawFreqResponse(){
   // ── Smoothed measurement (bold) ──
   drawCurve(freqCtx,freqCanvas,sm,'#006B63',0.18,2.5);
 
-  // ── Legend ──
-  freqCtx.save();
-  freqCtx.fillStyle='rgba(255,255,255,0.92)';
-  freqCtx.beginPath();
-  freqCtx.roundRect(PAD.l+6,PAD.t+6,162,52,5);
-  freqCtx.fill();
-  freqCtx.font='11px Roboto,sans-serif'; freqCtx.textAlign='left';
-  freqCtx.strokeStyle='rgba(120,80,0,0.55)'; freqCtx.lineWidth=1.5;
-  freqCtx.setLineDash([5,4]);
-  freqCtx.beginPath(); freqCtx.moveTo(PAD.l+12,PAD.t+17); freqCtx.lineTo(PAD.l+26,PAD.t+17); freqCtx.stroke();
-  freqCtx.setLineDash([]);
-  freqCtx.fillStyle='#6F7978'; freqCtx.fillText('Harman target',PAD.l+30,PAD.t+20);
-  freqCtx.strokeStyle='#006B63'; freqCtx.lineWidth=2.5;
-  freqCtx.beginPath(); freqCtx.moveTo(PAD.l+12,PAD.t+32); freqCtx.lineTo(PAD.l+26,PAD.t+32); freqCtx.stroke();
-  freqCtx.fillStyle='#3F4948'; freqCtx.fillText('Smoothed response',PAD.l+30,PAD.t+35);
-  freqCtx.strokeStyle='#006B63'; freqCtx.lineWidth=1; freqCtx.globalAlpha=0.5;
-  freqCtx.beginPath(); freqCtx.moveTo(PAD.l+12,PAD.t+46); freqCtx.lineTo(PAD.l+26,PAD.t+46); freqCtx.stroke();
-  freqCtx.globalAlpha=1;
-  freqCtx.fillStyle='#6F7978'; freqCtx.fillText('Raw',PAD.l+30,PAD.t+49);
-  freqCtx.restore();
 }
 
 function freqCanvasPointer(clientX,clientY){
@@ -1414,25 +1455,55 @@ freqCanvas.addEventListener('mouseleave',()=>drawFreqResponse());
 
 
 // ─── RT60 ───
+// Tier thresholds and colours — bottom of bar → top of bar
+const RT60_WELL_ABOVE = IDEAL_RT60_HI * 2; // 1.0 s — above this it's red
+const RT60_TIERS = [
+  { lo: 0,               hi: IDEAL_RT60_LO,   color: 'rgba(100,200,148,0.82)' }, // light green  — below sweet
+  { lo: IDEAL_RT60_LO,   hi: IDEAL_RT60_HI,   color: 'rgba(0,108,78,0.88)'   }, // dark green   — ideal sweet zone
+  { lo: IDEAL_RT60_HI,   hi: RT60_WELL_ABOVE,  color: 'rgba(195,132,0,0.88)'  }, // amber        — above sweet
+  { lo: RT60_WELL_ABOVE,  hi: Infinity,        color: 'rgba(186,26,26,0.88)'  }, // red          — well above
+];
+
 function drawRT60(){
   const container = document.getElementById('rt60-chart-container');
   container.innerHTML='';
   if(!rt60Values) return;
-  const maxT = Math.max(...rt60Values.map(v=>v.t60), IDEAL_RT60_HI*2);
-  rt60Values.forEach(({hz,t60,color})=>{
-    const pct = Math.min(95, (t60/maxT)*90+5);
-    const refPct_lo = (IDEAL_RT60_LO/maxT)*90+5;
-    const refPct_hi = (IDEAL_RT60_HI/maxT)*90+5;
-    const zoneTop  = 100-refPct_hi;
-    const zoneH    = refPct_hi-refPct_lo;
+
+  // Scale must always show at least through the well-above threshold so zone markers are visible
+  const maxT = Math.max(...rt60Values.map(v=>v.t60), RT60_WELL_ABOVE * 1.1);
+
+  rt60Values.forEach(({hz,t60})=>{
+    // Ideal zone stripe position (% from top of bar-area)
+    const refPct_lo = (IDEAL_RT60_LO / maxT) * 100;
+    const refPct_hi = (IDEAL_RT60_HI / maxT) * 100;
+    const zoneTop   = 100 - refPct_hi;
+    const zoneH     = refPct_hi - refPct_lo;
+
+    // Build segment list bottom → top
+    const segs = [];
+    for(const tier of RT60_TIERS){
+      if(t60 <= tier.lo) break;
+      const effectiveHi = tier.hi === Infinity ? maxT * 1.05 : tier.hi;
+      const contrib = Math.min(t60, effectiveHi) - tier.lo;
+      if(contrib <= 0) continue;
+      segs.push({ color: tier.color, pct: (contrib / maxT) * 100 });
+    }
+
+    // flex-direction:column-reverse stacks first DOM child at the BOTTOM of the container.
+    // Render segs[0] (bottom tier) first → it sits at the visual bottom. ✓
+    const segsHtml = segs.map(s =>
+      `<div style="flex-shrink:0;width:100%;height:${s.pct.toFixed(2)}%;background:${s.color};"></div>`
+    ).join('');
 
     const col = document.createElement('div');
-    col.className='rt60-column';
-    col.innerHTML=`
+    col.className = 'rt60-column';
+    col.innerHTML = `
       <div class="rt60-val-label">${t60}s</div>
       <div class="rt60-bar-area">
-        <div class="rt60-ideal-zone" style="top:${zoneTop}%;height:${zoneH}%;"></div>
-        <div class="rt60-bar-fill ${color}" style="height:${pct}%;"></div>
+        <div class="rt60-ideal-zone" style="top:${zoneTop.toFixed(2)}%;height:${zoneH.toFixed(2)}%;"></div>
+        <div style="position:absolute;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column-reverse;overflow:hidden;">
+          ${segsHtml}
+        </div>
       </div>
       <div class="rt60-hz-label">${hz>=1000?hz/1000+'k':hz} Hz</div>
     `;
@@ -1559,24 +1630,75 @@ document.getElementById('btn-export-freq-png').addEventListener('click',()=>{
 
 document.getElementById('btn-export-rt60-png').addEventListener('click',()=>{
   const tmp=document.createElement('canvas');
-  tmp.width=560; tmp.height=280;
+  tmp.width=560; tmp.height=300;
   const tc=tmp.getContext('2d');
-  tc.fillStyle='#FFFFFF'; tc.fillRect(0,0,560,280);
-  tc.fillStyle='#191C1C'; tc.font='13px Roboto,sans-serif'; tc.textAlign='center';
+  tc.fillStyle='#FFFFFF'; tc.fillRect(0,0,560,300);
+  tc.fillStyle='#191C1C'; tc.font='bold 13px Roboto,sans-serif'; tc.textAlign='center';
   tc.fillText('RT60 per Octave Band',280,22);
+
   if(rt60Values){
+    const CHART_TOP=38, CHART_H=220, CHART_BOT=CHART_TOP+CHART_H;
     const bw=560/rt60Values.length;
-    const maxT=Math.max(...rt60Values.map(v=>v.t60),1);
-    rt60Values.forEach(({hz,t60,color},i)=>{
-      const x=i*bw+10; const w=bw-12;
-      const h=(t60/maxT)*210; const y=250-h;
-      tc.fillStyle=color==='green'?'#006C4E':color==='yellow'?'#7D5700':'#BA1A1A';
-      tc.fillRect(x,y,w,h);
+    const maxT=Math.max(...rt60Values.map(v=>v.t60), RT60_WELL_ABOVE*1.1);
+
+    // Ideal zone band
+    const zoneY_hi = CHART_TOP + CHART_H * (1 - IDEAL_RT60_HI/maxT);
+    const zoneY_lo = CHART_TOP + CHART_H * (1 - IDEAL_RT60_LO/maxT);
+    tc.fillStyle='rgba(0,107,99,0.10)';
+    tc.fillRect(0, zoneY_hi, 560, zoneY_lo - zoneY_hi);
+    tc.strokeStyle='rgba(0,107,99,0.50)'; tc.lineWidth=1.5;
+    tc.setLineDash([5,4]);
+    tc.beginPath(); tc.moveTo(0,zoneY_hi); tc.lineTo(560,zoneY_hi); tc.stroke();
+    tc.beginPath(); tc.moveTo(0,zoneY_lo); tc.lineTo(560,zoneY_lo); tc.stroke();
+    tc.setLineDash([]);
+
+    // Tier colours (solid for PNG)
+    const PNG_TIERS=[
+      {lo:0,              hi:IDEAL_RT60_LO,  color:'rgba(100,200,148,0.85)'},
+      {lo:IDEAL_RT60_LO,  hi:IDEAL_RT60_HI,  color:'rgba(0,108,78,0.90)'  },
+      {lo:IDEAL_RT60_HI,  hi:RT60_WELL_ABOVE, color:'rgba(195,132,0,0.90)' },
+      {lo:RT60_WELL_ABOVE, hi:Infinity,       color:'rgba(186,26,26,0.90)' },
+    ];
+
+    rt60Values.forEach(({hz,t60},i)=>{
+      const x=i*bw+8; const w=bw-14;
+      let curY=CHART_BOT;
+
+      for(const tier of PNG_TIERS){
+        if(t60<=tier.lo) break;
+        const effectiveHi=tier.hi===Infinity?maxT*1.05:tier.hi;
+        const contrib=Math.min(t60,effectiveHi)-tier.lo;
+        if(contrib<=0) continue;
+        const segH=(contrib/maxT)*CHART_H;
+        tc.fillStyle=tier.color;
+        tc.fillRect(x, curY-segH, w, segH);
+        curY-=segH;
+      }
+
+      // Value label above bar
+      const barTopY=CHART_TOP+CHART_H*(1-t60/maxT);
       tc.fillStyle='#3F4948'; tc.font='10px Roboto,sans-serif'; tc.textAlign='center';
-      tc.fillText(t60+'s',x+w/2,y-4);
-      tc.fillText(hz>=1000?hz/1000+'k':hz,x+w/2,265);
+      tc.fillText(t60+'s', x+w/2, barTopY-4);
+      // Hz label below
+      tc.fillText(hz>=1000?hz/1000+'k':hz, x+w/2, CHART_BOT+14);
+    });
+
+    // Legend
+    const LX=12, LY=CHART_BOT+28, LS=10, LG=120;
+    const legendItems=[
+      {color:'rgba(100,200,148,0.85)',label:'Below ideal'},
+      {color:'rgba(0,108,78,0.90)',   label:'Ideal (0.3–0.5s)'},
+      {color:'rgba(195,132,0,0.90)',  label:'Above ideal'},
+      {color:'rgba(186,26,26,0.90)',  label:'Well above (>1s)'},
+    ];
+    tc.font='10px Roboto,sans-serif'; tc.textAlign='left';
+    legendItems.forEach((li,idx)=>{
+      const lx=LX+idx*LG;
+      tc.fillStyle=li.color; tc.fillRect(lx,LY,LS,LS);
+      tc.fillStyle='#3F4948'; tc.fillText(li.label,lx+LS+4,LY+LS-1);
     });
   }
+
   const a=document.createElement('a');
   a.download=`room-rt60-${Date.now()}.png`;
   a.href=tmp.toDataURL('image/png');
@@ -1701,7 +1823,7 @@ function computePEQBands(sm,refDB){
       :_peakCoeffs(best.hz,best.gain,best.q);
     work.forEach((w,wi)=>{residual[wi]-=_biquadMagDB(w.f,c);});
 
-    filters.push({hz:best.hz,gain:Math.round(best.gain*10)/10,
+    filters.push({hz:Math.round(best.hz),gain:Math.round(best.gain*10)/10,
                   q:Math.round(best.q*10)/10,type:best.type});
   }
 
@@ -1737,9 +1859,6 @@ function drawCorrectionChart(){
   });
   corrCtx.stroke(); corrCtx.setLineDash([]); corrCtx.restore();
 
-  // Measured (gray, thin)
-  drawCurve(corrCtx,corrCanvas,Array.from(sm),'#8A9B9A',0.04,1.5);
-
   // Predicted = measured + correction
   const corr=computeCorrection(sm,refDB);
   const predicted=Array.from(sm).map((v,i)=>v+corr[i]);
@@ -1757,22 +1876,6 @@ function drawCorrectionChart(){
   corrCtx.textAlign='left'; corrCtx.fillText('120 Hz',x120+3,PAD.t+12);
   corrCtx.restore();
 
-  // Legend
-  corrCtx.save();
-  corrCtx.fillStyle='rgba(255,255,255,0.92)';
-  corrCtx.beginPath(); corrCtx.roundRect(PAD.l+6,PAD.t+6,155,52,5); corrCtx.fill();
-  corrCtx.font='11px Roboto,sans-serif'; corrCtx.textAlign='left';
-  corrCtx.strokeStyle='rgba(120,80,0,0.55)'; corrCtx.lineWidth=1.5; corrCtx.setLineDash([5,4]);
-  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+17); corrCtx.lineTo(PAD.l+26,PAD.t+17); corrCtx.stroke();
-  corrCtx.setLineDash([]);
-  corrCtx.fillStyle='#6F7978'; corrCtx.fillText('Harman target',PAD.l+30,PAD.t+20);
-  corrCtx.strokeStyle='#8A9B9A'; corrCtx.lineWidth=1.5;
-  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+32); corrCtx.lineTo(PAD.l+26,PAD.t+32); corrCtx.stroke();
-  corrCtx.fillStyle='#6F7978'; corrCtx.fillText('Measured',PAD.l+30,PAD.t+35);
-  corrCtx.strokeStyle='#006B63'; corrCtx.lineWidth=2.5;
-  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+46); corrCtx.lineTo(PAD.l+26,PAD.t+46); corrCtx.stroke();
-  corrCtx.fillStyle='#3F4948'; corrCtx.fillText('Predicted',PAD.l+30,PAD.t+49);
-  corrCtx.restore();
 }
 
 function generatePEQList(){
