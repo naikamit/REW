@@ -763,7 +763,14 @@ let splAnalyser = null;
 document.getElementById('btn-mic-req').addEventListener('click', async()=>{
   try{
     micStream = await navigator.mediaDevices.getUserMedia({
-      audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+      audio:{
+        echoCancellation:false, noiseSuppression:false, autoGainControl:false,
+        // Chrome/Android legacy APM constraints — disables the built-in ~100 Hz
+        // high-pass filter that persists even when standard constraints are off.
+        googEchoCancellation:false, googNoiseSuppression:false,
+        googAutoGainControl:false, googHighpassFilter:false,
+        googTypingNoiseDetection:false
+      }
     });
     audioCtx  = new (window.AudioContext||window.webkitAudioContext)({sampleRate:SAMPLE_RATE});
     micSource = audioCtx.createMediaStreamSource(micStream);
@@ -873,8 +880,13 @@ async function startMeasurement(){
   scriptNode.onaudioprocess = e => {
     pcmChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
   };
+  // Mute the script node output so mic audio doesn't loop back through the speaker.
+  // ScriptProcessorNode requires a destination connection to fire onaudioprocess.
+  const scriptSink = ac.createGain();
+  scriptSink.gain.value = 0;
   micSource.connect(scriptNode);
-  scriptNode.connect(ac.destination);
+  scriptNode.connect(scriptSink);
+  scriptSink.connect(ac.destination);
 
   const sr          = ac.sampleRate;
   const recordStart = ac.currentTime;
@@ -908,7 +920,7 @@ async function startMeasurement(){
     });
   }
 
-  scriptNode.disconnect(); micSource.disconnect(); analyser.disconnect();
+  scriptNode.disconnect(); scriptSink.disconnect(); micSource.disconnect(); analyser.disconnect();
   cancelAnimationFrame(rafCapture);
   if(micStream) micStream.getTracks().forEach(t=>t.stop());
 
