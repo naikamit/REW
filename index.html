@@ -1122,6 +1122,9 @@ async function startMeasurement(){
   micSource.disconnect(); analyser.disconnect();
   cancelAnimationFrame(rafCapture);
 
+  // Release the mic immediately — no reason to hold it during processing or results
+  if(micStream) micStream.getTracks().forEach(t=>t.stop());
+
   showScreen('processing');
   document.getElementById('proc-progress').style.width='10%';
   document.getElementById('proc-step').textContent='Decoding audio…';
@@ -1964,4 +1967,3 @@ window.addEventListener('resize',()=>{
 </script>
 </body>
 </html>
-
