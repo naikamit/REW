@@ -1701,7 +1701,7 @@ function computePEQBands(sm,refDB){
       :_peakCoeffs(best.hz,best.gain,best.q);
     work.forEach((w,wi)=>{residual[wi]-=_biquadMagDB(w.f,c);});
 
-    filters.push({hz:best.hz,gain:Math.round(best.gain*10)/10,
+    filters.push({hz:Math.round(best.hz),gain:Math.round(best.gain*10)/10,
                   q:Math.round(best.q*10)/10,type:best.type});
   }
 
