@@ -824,11 +824,19 @@ function fToX(f,gw){
 }
 
 // Harman in-room target curve (dB relative to 0 at 500 Hz–2 kHz midband)
+// Harman in-room preferred response (Olive/Welti 2013):
+// ~+6.6 dB low shelf below 105 Hz, gentle -1 dB/octave treble tilt above 2 kHz.
+// Normalized so 500–1 kHz ≈ 0 dB.
 const HARMAN_PTS=[
-  [20,8],[30,7],[40,6],[60,4],[80,3],[100,2.5],[150,1.5],
-  [200,1],[300,0.5],[500,0],[1000,0],[2000,0],
-  [3000,-0.5],[4000,-1],[6000,-2.5],[8000,-4],
-  [10000,-5.5],[16000,-7],[20000,-8]
+  // Bass shelf — relatively flat +6.5 dB below ~80 Hz
+  [20,6.5],[30,6.5],[40,6.5],[50,6.4],[63,6.2],[80,5.7],
+  // Transition region: shelf rolls down to flat midrange around 100–400 Hz
+  [100,4.9],[125,3.8],[160,2.5],[200,1.6],[250,0.9],[315,0.4],[400,0.1],
+  // Flat reference
+  [500,0],[630,0],[1000,-0.4],
+  // Gentle treble tilt: roughly -1 dB/octave from 1 kHz
+  [1600,-1.0],[2000,-1.4],[3150,-2.2],[4000,-2.8],[5000,-3.4],
+  [6300,-4.0],[8000,-4.7],[10000,-5.4],[16000,-6.5],[20000,-7.2]
 ];
 function harmanAt(hz){
   const p=HARMAN_PTS;
