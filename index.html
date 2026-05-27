@@ -747,7 +747,7 @@ body{
     <div class="rt60-legend-note">
       <span style="color:#4ac88a">■</span> Below ideal &nbsp;
       <span style="color:#006C4E">■</span> Ideal 0.3–0.5s &nbsp;
-      <span style="color:#C38400">■</span> Above ideal &nbsp;
+      <span style="color:#C8A040">■</span> Above ideal &nbsp;
       <span style="color:#BA1A1A">■</span> Well above (&gt;1s) &nbsp;·&nbsp; dashed band = sweet zone
     </div>
     <div class="section-header">Insights</div>
@@ -1456,11 +1456,11 @@ freqCanvas.addEventListener('mouseleave',()=>drawFreqResponse());
 
 // ─── RT60 ───
 // Tier thresholds and colours — bottom of bar → top of bar
-const RT60_WELL_ABOVE = IDEAL_RT60_HI * 2; // 1.0 s — above this it's red
+const RT60_WELL_ABOVE = 0.75; // s — above this it's red
 const RT60_TIERS = [
   { lo: 0,               hi: IDEAL_RT60_LO,   color: 'rgba(100,200,148,0.82)' }, // light green  — below sweet
   { lo: IDEAL_RT60_LO,   hi: IDEAL_RT60_HI,   color: 'rgba(0,108,78,0.88)'   }, // dark green   — ideal sweet zone
-  { lo: IDEAL_RT60_HI,   hi: RT60_WELL_ABOVE,  color: 'rgba(195,132,0,0.88)'  }, // amber        — above sweet
+  { lo: IDEAL_RT60_HI,   hi: RT60_WELL_ABOVE,  color: 'rgba(210,165,60,0.75)'  }, // mild amber   — above sweet
   { lo: RT60_WELL_ABOVE,  hi: Infinity,        color: 'rgba(186,26,26,0.88)'  }, // red          — well above
 ];
 
@@ -1656,7 +1656,7 @@ document.getElementById('btn-export-rt60-png').addEventListener('click',()=>{
     const PNG_TIERS=[
       {lo:0,              hi:IDEAL_RT60_LO,  color:'rgba(100,200,148,0.85)'},
       {lo:IDEAL_RT60_LO,  hi:IDEAL_RT60_HI,  color:'rgba(0,108,78,0.90)'  },
-      {lo:IDEAL_RT60_HI,  hi:RT60_WELL_ABOVE, color:'rgba(195,132,0,0.90)' },
+      {lo:IDEAL_RT60_HI,  hi:RT60_WELL_ABOVE, color:'rgba(210,165,60,0.78)'  },
       {lo:RT60_WELL_ABOVE, hi:Infinity,       color:'rgba(186,26,26,0.90)' },
     ];
 
@@ -1688,7 +1688,7 @@ document.getElementById('btn-export-rt60-png').addEventListener('click',()=>{
     const legendItems=[
       {color:'rgba(100,200,148,0.85)',label:'Below ideal'},
       {color:'rgba(0,108,78,0.90)',   label:'Ideal (0.3–0.5s)'},
-      {color:'rgba(195,132,0,0.90)',  label:'Above ideal'},
+      {color:'rgba(210,165,60,0.78)',  label:'Above ideal'},
       {color:'rgba(186,26,26,0.90)',  label:'Well above (>1s)'},
     ];
     tc.font='10px Roboto,sans-serif'; tc.textAlign='left';
@@ -1964,3 +1964,4 @@ window.addEventListener('resize',()=>{
 </script>
 </body>
 </html>
+
