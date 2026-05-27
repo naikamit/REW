@@ -865,71 +865,19 @@ async function startMeasurement(){
   const silencePost   = 1.5;
   const totalPerSweep = silencePre + sweepDur + silencePost;
 
-  const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg','']
-    .find(m => m==='' || MediaRecorder.isTypeSupported(m));
-
-  const dest     = ac.createMediaStreamDestination();
-  micSource.connect(dest);
-  const recorder = new MediaRecorder(dest.stream, mimeType ? {mimeType} : {});
-  const chunks   = [];
-  recorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
-
-  recorder.onstop = async () => {
-    const blob = new Blob(chunks, {type: recorder.mimeType||'audio/webm'});
-    let decoded;
-    try {
-      const arrBuf = await blob.arrayBuffer();
-      decoded = await ac.decodeAudioData(arrBuf);
-    } catch(e) {
-      console.warn('decodeAudioData failed:', e);
-      freqCurve  = new Float32Array(NUM_BANDS+1).fill(DB_MIN);
-      rt60Values = RT60_BANDS.map(hz=>({hz,t60:0.4,color:'green'}));
-      showScreen('result-freq');
-      return;
-    }
-
-    document.getElementById('proc-progress').style.width='35%';
-    document.getElementById('proc-step').textContent='Extracting impulse responses…';
-    await new Promise(r=>setTimeout(r,80));
-
-    const sig   = decoded.getChannelData(0);
-    const sr    = decoded.sampleRate;
-    const irLen = Math.ceil(sweepDur * sr);
-    const inv   = invBuf.getChannelData(0);
-    const avgIR = new Float32Array(irLen);
-    let valid   = 0;
-
-    for(let sw=0;sw<NUM_SWEEPS;sw++){
-      const sStart = Math.round(sweepStartTimes[sw] * sr);
-      const seg    = sig.slice(sStart, sStart + Math.ceil(totalPerSweep*sr));
-      if(seg.length < irLen) continue;
-      document.getElementById('proc-step').textContent=`Deconvolving sweep ${sw+1}/${NUM_SWEEPS}…`;
-      await new Promise(r=>setTimeout(r,30));
-      const ir = await convolveOffline(seg, inv, sr, irLen);
-      for(let i=0;i<irLen;i++) avgIR[i]+=ir[i];
-      valid++;
-      document.getElementById('proc-progress').style.width=(35+valid*10)+'%';
-    }
-    if(valid>0) for(let i=0;i<irLen;i++) avgIR[i]/=valid;
-
-    document.getElementById('proc-progress').style.width='65%';
-    document.getElementById('proc-step').textContent='Computing frequency response…';
-    await new Promise(r=>setTimeout(r,80));
-    freqCurve = computeFreqResponse(avgIR, sr);
-
-    document.getElementById('proc-progress').style.width='78%';
-    document.getElementById('proc-step').textContent='Measuring RT60…';
-    await new Promise(r=>setTimeout(r,80));
-    rt60Values = computeRT60(avgIR, sr);
-
-    document.getElementById('proc-progress').style.width='100%';
-    document.getElementById('proc-step').textContent='Done.';
-    await new Promise(r=>setTimeout(r,300));
-    showScreen('result-freq');
+  // Capture raw PCM via ScriptProcessorNode — bypasses Opus/codec high-pass filtering
+  // that would otherwise kill sub frequencies below ~60-100 Hz.
+  const SCRIPT_BUF = 4096;
+  const pcmChunks  = [];
+  const scriptNode = ac.createScriptProcessor(SCRIPT_BUF, 1, 1);
+  scriptNode.onaudioprocess = e => {
+    pcmChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
   };
+  micSource.connect(scriptNode);
+  scriptNode.connect(ac.destination);
 
-  recorder.start(100);
-  const recordStart     = ac.currentTime;
+  const sr          = ac.sampleRate;
+  const recordStart = ac.currentTime;
   const sweepStartTimes = [];
 
   document.getElementById('cap-state').textContent='REC';
@@ -960,14 +908,54 @@ async function startMeasurement(){
     });
   }
 
-  recorder.stop();
-  micSource.disconnect(); analyser.disconnect();
+  scriptNode.disconnect(); micSource.disconnect(); analyser.disconnect();
   cancelAnimationFrame(rafCapture);
   if(micStream) micStream.getTracks().forEach(t=>t.stop());
 
   showScreen('processing');
-  document.getElementById('proc-progress').style.width='10%';
-  document.getElementById('proc-step').textContent='Decoding audio…';
+
+  // Assemble all captured PCM chunks into one flat array
+  const totalSamples = pcmChunks.reduce((s,c)=>s+c.length,0);
+  const sig = new Float32Array(totalSamples);
+  let off = 0;
+  for(const c of pcmChunks){ sig.set(c,off); off+=c.length; }
+
+  document.getElementById('proc-progress').style.width='35%';
+  document.getElementById('proc-step').textContent='Extracting impulse responses…';
+  await new Promise(r=>setTimeout(r,80));
+
+  const irLen = Math.ceil(sweepDur * sr);
+  const inv   = invBuf.getChannelData(0);
+  const avgIR = new Float32Array(irLen);
+  let valid   = 0;
+
+  for(let sw=0;sw<NUM_SWEEPS;sw++){
+    const sStart = Math.round(sweepStartTimes[sw] * sr);
+    const seg    = sig.slice(sStart, sStart + Math.ceil(totalPerSweep*sr));
+    if(seg.length < irLen) continue;
+    document.getElementById('proc-step').textContent=`Deconvolving sweep ${sw+1}/${NUM_SWEEPS}…`;
+    await new Promise(r=>setTimeout(r,30));
+    const ir = await convolveOffline(seg, inv, sr, irLen);
+    for(let i=0;i<irLen;i++) avgIR[i]+=ir[i];
+    valid++;
+    document.getElementById('proc-progress').style.width=(35+valid*10)+'%';
+  }
+  if(valid>0) for(let i=0;i<irLen;i++) avgIR[i]/=valid;
+
+  document.getElementById('proc-progress').style.width='65%';
+  document.getElementById('proc-step').textContent='Computing frequency response…';
+  await new Promise(r=>setTimeout(r,80));
+  freqCurve = computeFreqResponse(avgIR, sr);
+
+  document.getElementById('proc-progress').style.width='78%';
+  document.getElementById('proc-step').textContent='Measuring RT60…';
+  await new Promise(r=>setTimeout(r,80));
+  rt60Values = computeRT60(avgIR, sr);
+
+  document.getElementById('proc-progress').style.width='100%';
+  document.getElementById('proc-step').textContent='Done.';
+  await new Promise(r=>setTimeout(r,300));
+  showScreen('result-freq');
 }
 
 // ── DSP helpers
