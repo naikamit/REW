@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <meta name="color-scheme" content="dark"/>
 <meta name="theme-color" content="#0F1416"/>
 <title>Room Analyzer</title>
@@ -12,7 +12,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{color-scheme:light;}
-html,body{height:100%;height:100dvh;overflow:hidden;}
+html,body{height:100%;overflow:hidden;}
 
 :root{
   --bg:#F4FAF9;
@@ -41,7 +41,6 @@ body{
   font-family:'Roboto',sans-serif;
   color:var(--on-surface);
   height:100vh;
-  height:100dvh;
   display:flex;
   flex-direction:column;
   overflow:hidden;
@@ -558,12 +557,6 @@ body{
   .canvas-card{min-height:300px;}
 }
 
-/* ── CHART LEGEND (external, below canvas) ── */
-.chart-wrap{display:flex;flex-direction:column;gap:8px;}
-.chart-legend{display:flex;flex-direction:row;flex-wrap:wrap;gap:16px;padding:0 6px;}
-.legend-item{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--on-surface-variant);}
-.legend-swatch{width:24px;height:0;flex-shrink:0;}
-
 /* ── PEQ TABLE ── */
 .peq-note{font-size:13px;color:var(--on-surface-variant);line-height:1.5;}
 .peq-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface-container);border-radius:10px;overflow:hidden;}
@@ -702,21 +695,8 @@ body{
   </div>
 
   <div class="screen-body">
-    <div class="chart-wrap">
-      <div class="canvas-card" id="freq-canvas-card" style="min-height:220px;">
-        <canvas id="freq-canvas"></canvas>
-      </div>
-      <div class="chart-legend">
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:1.5px dashed rgba(120,80,0,0.65)"></span>Harman target
-        </span>
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:2.5px solid #006B63"></span>Smoothed
-        </span>
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:1.5px solid rgba(0,107,99,0.4)"></span>Raw
-        </span>
-      </div>
+    <div class="canvas-card" id="freq-canvas-card" style="min-height:220px;">
+      <canvas id="freq-canvas"></canvas>
     </div>
 
     <div class="section-header">Insights</div>
@@ -768,18 +748,8 @@ body{
   </div>
 
   <div class="screen-body">
-    <div class="chart-wrap">
-      <div class="canvas-card" id="corr-canvas-card" style="min-height:220px;">
-        <canvas id="corr-canvas"></canvas>
-      </div>
-      <div class="chart-legend">
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:1.5px dashed rgba(120,80,0,0.65)"></span>Harman target
-        </span>
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:2.5px solid #006B63"></span>Predicted (corrected)
-        </span>
-      </div>
+    <div class="canvas-card" id="corr-canvas-card" style="min-height:220px;">
+      <canvas id="corr-canvas"></canvas>
     </div>
 
     <div class="section-header">Parametric EQ · corrections below 120 Hz</div>
@@ -825,19 +795,11 @@ function fToX(f,gw){
 }
 
 // Harman in-room target curve (dB relative to 0 at 500 Hz–2 kHz midband)
-// Harman in-room preferred response (Olive/Welti 2013):
-// ~+6.6 dB low shelf below 105 Hz, gentle -1 dB/octave treble tilt above 2 kHz.
-// Normalized so 500–1 kHz ≈ 0 dB.
 const HARMAN_PTS=[
-  // Bass shelf — relatively flat +6.5 dB below ~80 Hz
-  [20,6.5],[30,6.5],[40,6.5],[50,6.4],[63,6.2],[80,5.7],
-  // Transition region: shelf rolls down to flat midrange around 100–400 Hz
-  [100,4.9],[125,3.8],[160,2.5],[200,1.6],[250,0.9],[315,0.4],[400,0.1],
-  // Flat reference
-  [500,0],[630,0],[1000,-0.4],
-  // Gentle treble tilt: roughly -1 dB/octave from 1 kHz
-  [1600,-1.0],[2000,-1.4],[3150,-2.2],[4000,-2.8],[5000,-3.4],
-  [6300,-4.0],[8000,-4.7],[10000,-5.4],[16000,-6.5],[20000,-7.2]
+  [20,8],[30,7],[40,6],[60,4],[80,3],[100,2.5],[150,1.5],
+  [200,1],[300,0.5],[500,0],[1000,0],[2000,0],
+  [3000,-0.5],[4000,-1],[6000,-2.5],[8000,-4],
+  [10000,-5.5],[16000,-7],[20000,-8]
 ];
 function harmanAt(hz){
   const p=HARMAN_PTS;
@@ -1268,7 +1230,7 @@ function drawLiveCapture(){
 // ═══════════════════════════════════════════════
 //  RESULTS DRAWING
 // ═══════════════════════════════════════════════
-const PAD={l:52,r:10,t:22,b:40};
+const PAD={l:42,r:10,t:16,b:28};
 
 function G(canvas){
   const W=canvas.width, H=canvas.height;
@@ -1277,46 +1239,28 @@ function G(canvas){
 
 function drawGrid(ctx,canvas){
   const{W,H,GW,GH}=G(canvas);
-  ctx.fillStyle='#FAFAFA'; ctx.fillRect(0,0,W,H);
-  // chart plot area background
-  ctx.fillStyle='#FFFFFF'; ctx.fillRect(PAD.l,PAD.t,GW,GH);
-
-  // ── horizontal dB gridlines + labels ──
+  ctx.fillStyle='#FFFFFF'; ctx.fillRect(0,0,W,H);
+  // horizontal dB gridlines
   DB_GRID.forEach(db=>{
     const y=PAD.t+GH-((db-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(y<PAD.t||y>PAD.t+GH) return;
-    ctx.strokeStyle='rgba(0,0,0,0.11)'; ctx.lineWidth=1;
-    ctx.setLineDash([3,3]);
+    ctx.strokeStyle='rgba(0,0,0,0.08)'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(PAD.l+GW,y); ctx.stroke();
-    ctx.setLineDash([]);
     ctx.fillStyle='#3F4948'; ctx.font='bold 12px Roboto,sans-serif';
-    ctx.textAlign='right'; ctx.fillText(db,PAD.l-7,y+4);
+    ctx.textAlign='right'; ctx.fillText(db,PAD.l-5,y+4);
   });
-
-  // ── vertical Hz gridlines + labels ──
+  // vertical Hz gridlines
   OCT_LABELS.forEach(({hz,l})=>{
     const x=PAD.l+fToX(hz,GW);
     const maj=hz===100||hz===1000||hz===10000;
-    ctx.strokeStyle=maj?'rgba(0,0,0,0.18)':'rgba(0,0,0,0.07)';
-    ctx.lineWidth=maj?1:0.8;
-    if(!maj){ctx.setLineDash([2,3]);}
+    ctx.strokeStyle=maj?'rgba(0,0,0,0.12)':'rgba(0,0,0,0.06)'; ctx.lineWidth=maj?1:0.7;
     ctx.beginPath(); ctx.moveTo(x,PAD.t); ctx.lineTo(x,PAD.t+GH); ctx.stroke();
-    ctx.setLineDash([]);
     ctx.fillStyle=maj?'#191C1C':'#6F7978';
-    ctx.font=`${maj?'bold 13':'11'}px Roboto,sans-serif`;
-    ctx.textAlign='center'; ctx.fillText(l,x,PAD.t+GH+16);
+    ctx.font=`${maj?'bold 12':'11'}px Roboto,sans-serif`; ctx.textAlign='center';
+    ctx.fillText(l,x,PAD.t+GH+18);
   });
-
-  // ── axis titles ──
-  ctx.fillStyle='#6F7978'; ctx.font='11px Roboto,sans-serif';
-  // "dB" rotated on left
-  ctx.save(); ctx.translate(11,PAD.t+GH/2); ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center'; ctx.fillText('dB',0,0); ctx.restore();
-  // "Hz" at bottom right
-  ctx.textAlign='right'; ctx.fillText('Hz',PAD.l+GW,PAD.t+GH+30);
-
-  // ── border ──
-  ctx.strokeStyle='rgba(0,0,0,0.22)'; ctx.lineWidth=1;
+  // border
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=1;
   ctx.strokeRect(PAD.l,PAD.t,GW,GH);
 }
 
@@ -1351,7 +1295,7 @@ function drawCurve(ctx,canvas,vals,color,fillAlpha,lw){
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   });
   ctx.strokeStyle=color; ctx.lineWidth=lw||1.5;
-  ctx.stroke();
+  ctx.shadowColor=color; ctx.shadowBlur=5; ctx.stroke(); ctx.shadowBlur=0;
   ctx.restore();
 }
 
@@ -1404,6 +1348,26 @@ function drawFreqResponse(){
   // ── Smoothed measurement (bold) ──
   drawCurve(freqCtx,freqCanvas,sm,'#006B63',0.18,2.5);
 
+  // ── Legend ──
+  freqCtx.save();
+  freqCtx.fillStyle='rgba(255,255,255,0.92)';
+  freqCtx.beginPath();
+  freqCtx.roundRect(PAD.l+6,PAD.t+6,162,52,5);
+  freqCtx.fill();
+  freqCtx.font='11px Roboto,sans-serif'; freqCtx.textAlign='left';
+  freqCtx.strokeStyle='rgba(120,80,0,0.55)'; freqCtx.lineWidth=1.5;
+  freqCtx.setLineDash([5,4]);
+  freqCtx.beginPath(); freqCtx.moveTo(PAD.l+12,PAD.t+17); freqCtx.lineTo(PAD.l+26,PAD.t+17); freqCtx.stroke();
+  freqCtx.setLineDash([]);
+  freqCtx.fillStyle='#6F7978'; freqCtx.fillText('Harman target',PAD.l+30,PAD.t+20);
+  freqCtx.strokeStyle='#006B63'; freqCtx.lineWidth=2.5;
+  freqCtx.beginPath(); freqCtx.moveTo(PAD.l+12,PAD.t+32); freqCtx.lineTo(PAD.l+26,PAD.t+32); freqCtx.stroke();
+  freqCtx.fillStyle='#3F4948'; freqCtx.fillText('Smoothed response',PAD.l+30,PAD.t+35);
+  freqCtx.strokeStyle='#006B63'; freqCtx.lineWidth=1; freqCtx.globalAlpha=0.5;
+  freqCtx.beginPath(); freqCtx.moveTo(PAD.l+12,PAD.t+46); freqCtx.lineTo(PAD.l+26,PAD.t+46); freqCtx.stroke();
+  freqCtx.globalAlpha=1;
+  freqCtx.fillStyle='#6F7978'; freqCtx.fillText('Raw',PAD.l+30,PAD.t+49);
+  freqCtx.restore();
 }
 
 function freqCanvasPointer(clientX,clientY){
@@ -1737,7 +1701,7 @@ function computePEQBands(sm,refDB){
       :_peakCoeffs(best.hz,best.gain,best.q);
     work.forEach((w,wi)=>{residual[wi]-=_biquadMagDB(w.f,c);});
 
-    filters.push({hz:Math.round(best.hz),gain:Math.round(best.gain*10)/10,
+    filters.push({hz:best.hz,gain:Math.round(best.gain*10)/10,
                   q:Math.round(best.q*10)/10,type:best.type});
   }
 
@@ -1773,6 +1737,9 @@ function drawCorrectionChart(){
   });
   corrCtx.stroke(); corrCtx.setLineDash([]); corrCtx.restore();
 
+  // Measured (gray, thin)
+  drawCurve(corrCtx,corrCanvas,Array.from(sm),'#8A9B9A',0.04,1.5);
+
   // Predicted = measured + correction
   const corr=computeCorrection(sm,refDB);
   const predicted=Array.from(sm).map((v,i)=>v+corr[i]);
@@ -1790,6 +1757,22 @@ function drawCorrectionChart(){
   corrCtx.textAlign='left'; corrCtx.fillText('120 Hz',x120+3,PAD.t+12);
   corrCtx.restore();
 
+  // Legend
+  corrCtx.save();
+  corrCtx.fillStyle='rgba(255,255,255,0.92)';
+  corrCtx.beginPath(); corrCtx.roundRect(PAD.l+6,PAD.t+6,155,52,5); corrCtx.fill();
+  corrCtx.font='11px Roboto,sans-serif'; corrCtx.textAlign='left';
+  corrCtx.strokeStyle='rgba(120,80,0,0.55)'; corrCtx.lineWidth=1.5; corrCtx.setLineDash([5,4]);
+  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+17); corrCtx.lineTo(PAD.l+26,PAD.t+17); corrCtx.stroke();
+  corrCtx.setLineDash([]);
+  corrCtx.fillStyle='#6F7978'; corrCtx.fillText('Harman target',PAD.l+30,PAD.t+20);
+  corrCtx.strokeStyle='#8A9B9A'; corrCtx.lineWidth=1.5;
+  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+32); corrCtx.lineTo(PAD.l+26,PAD.t+32); corrCtx.stroke();
+  corrCtx.fillStyle='#6F7978'; corrCtx.fillText('Measured',PAD.l+30,PAD.t+35);
+  corrCtx.strokeStyle='#006B63'; corrCtx.lineWidth=2.5;
+  corrCtx.beginPath(); corrCtx.moveTo(PAD.l+12,PAD.t+46); corrCtx.lineTo(PAD.l+26,PAD.t+46); corrCtx.stroke();
+  corrCtx.fillStyle='#3F4948'; corrCtx.fillText('Predicted',PAD.l+30,PAD.t+49);
+  corrCtx.restore();
 }
 
 function generatePEQList(){
