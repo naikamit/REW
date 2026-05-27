@@ -152,6 +152,13 @@ body{
 .noise-warn-card.visible{display:flex;}
 .noise-warn-text{font-size:14px;color:var(--warning);line-height:1.5;}
 
+/* ── EXTERNAL MODE TOGGLE ── */
+.mode-toggle{display:flex;border-radius:20px;border:1.5px solid var(--primary);overflow:hidden;width:100%;}
+.mode-toggle-btn{flex:1;padding:10px 4px;font-size:13px;font-weight:500;border:none;background:transparent;color:var(--primary);cursor:pointer;transition:background .15s;}
+.mode-toggle-btn.active{background:var(--primary);color:#fff;}
+.ext-info-card{background:var(--primary-container);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--on-primary-container);line-height:1.6;display:none;}
+.ext-info-card.visible{display:block;}
+
 /* ── CAPTURE ── */
 .capture-header{height:64px;background:var(--surface-container);border-bottom:1px solid var(--outline-variant);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;}
 .capture-title{font-size:22px;font-weight:400;color:var(--on-surface);flex:1;}
@@ -519,6 +526,21 @@ body{
       <div class="noise-warn-text">Background noise is too high. Close windows, turn off fans and AC, then try again. High noise gives inaccurate results.</div>
     </div>
 
+    <div class="card" style="padding:14px 16px;">
+      <div class="mic-check-label" style="margin-bottom:10px;">Playback Source</div>
+      <div class="mode-toggle">
+        <button class="mode-toggle-btn active" id="btn-mode-phone">📱 Phone Speaker</button>
+        <button class="mode-toggle-btn" id="btn-mode-ext">🔊 External System</button>
+      </div>
+      <div class="ext-info-card" id="ext-info" style="margin-top:10px;">
+        <b>Phone will not play any sound.</b> Instead:<br>
+        1. Download the sweep file below and transfer it to whatever device drives your speakers (laptop, streamer, etc.)<br>
+        2. Tap <b>Start Measurement</b> — app will listen for <b>30 seconds</b><br>
+        3. Press play on your audio system when ready — the app auto-detects the sweep<br>
+        <a id="btn-dl-sweep" href="#" style="display:inline-block;margin-top:10px;font-weight:600;color:var(--primary);">⬇ Download sweep WAV</a>
+      </div>
+    </div>
+
   </div>
   <div class="bottom-bar">
     <div class="bottom-bar-spacer"></div>
@@ -549,7 +571,7 @@ body{
       <div class="progress-track"><div class="progress-fill" id="cap-progress"></div></div>
       <div class="progress-label" id="cap-step">Initializing…</div>
     </div>
-    <div style="font-size:13px;color:var(--on-surface-variant);line-height:1.5;text-align:center;">
+    <div style="font-size:13px;color:var(--on-surface-variant);line-height:1.5;text-align:center;" id="cap-hint">
       Stay still and keep quiet while sweeps play through your speakers.
     </div>
   </div>
@@ -717,6 +739,8 @@ function harmanAt(hz){
   return 0;
 }
 
+let externalMode = false;
+
 let audioCtx   = null;
 let micStream  = null;
 let micSource  = null;
@@ -816,6 +840,28 @@ document.getElementById('btn-start').addEventListener('click', ()=>{
   startMeasurement();
 });
 
+// ── External mode toggle + sweep download
+document.getElementById('btn-mode-phone').addEventListener('click',()=>{
+  externalMode=false;
+  document.getElementById('btn-mode-phone').classList.add('active');
+  document.getElementById('btn-mode-ext').classList.remove('active');
+  document.getElementById('ext-info').classList.remove('visible');
+});
+document.getElementById('btn-mode-ext').addEventListener('click',()=>{
+  externalMode=true;
+  document.getElementById('btn-mode-ext').classList.add('active');
+  document.getElementById('btn-mode-phone').classList.remove('active');
+  document.getElementById('ext-info').classList.add('visible');
+});
+document.getElementById('btn-dl-sweep').addEventListener('click',e=>{
+  e.preventDefault();
+  const blob=buildSweepWAVBlob();
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='room-sweep.wav'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+});
+
 // ── Capture + sweep engine
 const capCanvas = document.getElementById('capture-canvas');
 const capCtx    = capCanvas.getContext('2d');
@@ -849,6 +895,74 @@ function generateInverseFilter(ac, duration, f1, f2){
     ch[n-1-i] = sn[i]*w;
   }
   return buf;
+}
+
+// ── Sweep WAV generation (for external speaker mode)
+function sweepRawSamples(sr, duration, f1, f2){
+  const n = Math.ceil(duration * sr);
+  const data = new Float32Array(n);
+  const k = Math.log(f2/f1);
+  const fade = Math.ceil(0.05*sr);
+  for(let i=0;i<n;i++){
+    const t=i/sr;
+    const phi=2*Math.PI*f1*(duration/k)*(Math.exp(k*t/duration)-1);
+    let env=1;
+    if(i<fade) env=i/fade;
+    else if(i>n-fade) env=(n-i)/fade;
+    data[i]=Math.sin(phi)*env*0.7;
+  }
+  return data;
+}
+
+function encodeWAV(samples, sr){
+  const buf=new ArrayBuffer(44+samples.length*2);
+  const v=new DataView(buf);
+  const wr=(off,s)=>{for(let i=0;i<s.length;i++) v.setUint8(off+i,s.charCodeAt(i));};
+  wr(0,'RIFF'); v.setUint32(4,36+samples.length*2,true); wr(8,'WAVE');
+  wr(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  wr(36,'data'); v.setUint32(40,samples.length*2,true);
+  let off=44;
+  for(let i=0;i<samples.length;i++){
+    const s=Math.max(-1,Math.min(1,samples[i]));
+    v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true); off+=2;
+  }
+  return buf;
+}
+
+function buildSweepWAVBlob(){
+  const sr=SAMPLE_RATE, silPre=0.5, sweepD=SWEEP_DURATION, silPost=1.5;
+  const total=Math.ceil(NUM_SWEEPS*(silPre+sweepD+silPost)*sr);
+  const all=new Float32Array(total);
+  const sw=sweepRawSamples(sr,sweepD,MIN_HZ,MAX_HZ);
+  for(let i=0;i<NUM_SWEEPS;i++){
+    const off=Math.ceil(i*(silPre+sweepD+silPost)*sr)+Math.ceil(silPre*sr);
+    all.set(sw,off);
+  }
+  return new Blob([encodeWAV(all,sr)],{type:'audio/wav'});
+}
+
+// Cross-correlation based sweep start detection (for external mode)
+async function findSweepStarts(sig, sr, sweepD, totalPerSweep){
+  const ref=sweepRawSamples(sr,sweepD,MIN_HZ,MAX_HZ);
+  // time-reverse ref for correlation
+  const rev=ref.slice().reverse();
+  const corr=await convolveOffline(sig,rev,sr,sig.length);
+  const corrAbs=new Float32Array(corr.length);
+  for(let i=0;i<corr.length;i++) corrAbs[i]=Math.abs(corr[i]);
+  const minGap=Math.floor(totalPerSweep*sr*0.7);
+  const starts=[];
+  const used=new Uint8Array(corr.length);
+  for(let pass=0;pass<NUM_SWEEPS;pass++){
+    let mx=0,mi=0;
+    for(let i=0;i<corrAbs.length;i++) if(!used[i]&&corrAbs[i]>mx){mx=corrAbs[i];mi=i;}
+    // correlation peak is at end of sweep; start = peak - (sweepD*sr - 1)
+    const sweepStart=Math.max(0,mi-(ref.length-1));
+    starts.push(sweepStart/sr);
+    const lo=Math.max(0,mi-minGap), hi=Math.min(corrAbs.length,mi+minGap);
+    for(let i=lo;i<hi;i++) used[i]=1;
+  }
+  return starts.sort((a,b)=>a-b);
 }
 
 async function startMeasurement(){
@@ -889,35 +1003,55 @@ async function startMeasurement(){
   scriptSink.connect(ac.destination);
 
   const sr          = ac.sampleRate;
-  const recordStart = ac.currentTime;
-  const sweepStartTimes = [];
+  let sweepStartTimes = [];
 
   document.getElementById('cap-state').textContent='REC';
 
-  for(let sw=0;sw<NUM_SWEEPS;sw++){
-    document.getElementById('cap-sweep').textContent=`${sw+1}/${NUM_SWEEPS}`;
-    document.getElementById('sweep-chip').textContent=`Sweep ${sw+1} / ${NUM_SWEEPS}`;
-
-    const sweepTime = recordStart + sw*totalPerSweep + silencePre;
-    sweepStartTimes.push(sweepTime - recordStart);
-
-    const src = ac.createBufferSource();
-    src.buffer = sweepBuf; src.connect(ac.destination);
-    src.start(sweepTime); src.stop(sweepTime+sweepDur);
-
-    const t0=performance.now(), t1=t0+totalPerSweep*1000;
+  if(externalMode){
+    // External mode: just record mic, user plays sweep through their system
+    const extDuration = NUM_SWEEPS * totalPerSweep + 5;
+    document.getElementById('sweep-chip').textContent='Listening…';
+    document.getElementById('cap-hint').textContent='Play the sweep on your audio system now. Recording for '+Math.round(extDuration)+'s.';
+    const t0=performance.now(), t1=t0+extDuration*1000;
     await new Promise(resolve=>{
       function tick(){
         const frac=Math.min(1,(performance.now()-t0)/(t1-t0));
-        document.getElementById('cap-progress').style.width=((sw+frac)/NUM_SWEEPS*100)+'%';
-        document.getElementById('cap-step').textContent=
-          frac<silencePre/totalPerSweep?'Silence…':
-          frac<(silencePre+sweepDur)/totalPerSweep?'Sweep playing…':'Capturing tail…';
+        document.getElementById('cap-progress').style.width=(frac*100)+'%';
+        document.getElementById('cap-step').textContent='Listening… '+(Math.round(extDuration*(1-frac)))+'s remaining';
+        document.getElementById('cap-sweep').textContent='—';
         drawLiveCapture();
         if(frac<1) rafCapture=requestAnimationFrame(tick); else resolve();
       }
       tick();
     });
+  } else {
+    // Phone speaker mode: play sweep and record simultaneously
+    const recordStart = ac.currentTime;
+    for(let sw=0;sw<NUM_SWEEPS;sw++){
+      document.getElementById('cap-sweep').textContent=`${sw+1}/${NUM_SWEEPS}`;
+      document.getElementById('sweep-chip').textContent=`Sweep ${sw+1} / ${NUM_SWEEPS}`;
+
+      const sweepTime = recordStart + sw*totalPerSweep + silencePre;
+      sweepStartTimes.push(sweepTime - recordStart);
+
+      const src = ac.createBufferSource();
+      src.buffer = sweepBuf; src.connect(ac.destination);
+      src.start(sweepTime); src.stop(sweepTime+sweepDur);
+
+      const t0=performance.now(), t1=t0+totalPerSweep*1000;
+      await new Promise(resolve=>{
+        function tick(){
+          const frac=Math.min(1,(performance.now()-t0)/(t1-t0));
+          document.getElementById('cap-progress').style.width=((sw+frac)/NUM_SWEEPS*100)+'%';
+          document.getElementById('cap-step').textContent=
+            frac<silencePre/totalPerSweep?'Silence…':
+            frac<(silencePre+sweepDur)/totalPerSweep?'Sweep playing…':'Capturing tail…';
+          drawLiveCapture();
+          if(frac<1) rafCapture=requestAnimationFrame(tick); else resolve();
+        }
+        tick();
+      });
+    }
   }
 
   scriptNode.disconnect(); scriptSink.disconnect(); micSource.disconnect(); analyser.disconnect();
@@ -929,8 +1063,17 @@ async function startMeasurement(){
   // Assemble all captured PCM chunks into one flat array
   const totalSamples = pcmChunks.reduce((s,c)=>s+c.length,0);
   const sig = new Float32Array(totalSamples);
-  let off = 0;
-  for(const c of pcmChunks){ sig.set(c,off); off+=c.length; }
+  let sigOff = 0;
+  for(const c of pcmChunks){ sig.set(c,sigOff); sigOff+=c.length; }
+
+  document.getElementById('proc-progress').style.width='20%';
+  document.getElementById('proc-step').textContent='Locating sweep in recording…';
+  await new Promise(r=>setTimeout(r,80));
+
+  if(externalMode){
+    // Auto-detect sweep positions via cross-correlation
+    sweepStartTimes = await findSweepStarts(sig, sr, sweepDur, totalPerSweep);
+  }
 
   document.getElementById('proc-progress').style.width='35%';
   document.getElementById('proc-step').textContent='Extracting impulse responses…';
@@ -1392,6 +1535,11 @@ document.getElementById('btn-redo').addEventListener('click',()=>{
   document.getElementById('spl-status').textContent='Enable your mic to check noise level';
   document.getElementById('spl-status').style.color='var(--on-surface-variant)';
   document.getElementById('noise-warn').classList.remove('visible');
+  // reset mode toggle
+  externalMode=false;
+  document.getElementById('btn-mode-phone').classList.add('active');
+  document.getElementById('btn-mode-ext').classList.remove('active');
+  document.getElementById('ext-info').classList.remove('visible');
   showScreen('setup-position');
 });
 
