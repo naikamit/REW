@@ -37,528 +37,173 @@ html,body{height:100%;height:100dvh;overflow:hidden;}
 }
 
 body{
-  background:var(--bg);
-  font-family:'Roboto',sans-serif;
-  color:var(--on-surface);
-  height:100vh;
-  height:100dvh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
+  background:var(--bg);font-family:'Roboto',sans-serif;color:var(--on-surface);
+  height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;
 }
 
-/* ── SCREENS ── */
-.screen{
-  display:none;
-  flex-direction:column;
-  height:100%;
-  overflow:hidden;
-}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
 .screen.active{display:flex;}
 
-/* ── SCREEN BODY (scrollable area) ── */
 .screen-body{
-  flex:1;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  padding:16px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px;display:flex;flex-direction:column;gap:12px;
 }
 
-/* ── TOP APP BAR ── */
 .top-app-bar{
-  height:64px;
-  background:var(--surface-container);
-  border-bottom:1px solid var(--outline-variant);
-  display:flex;
-  align-items:center;
-  padding:0 16px;
-  gap:8px;
-  flex-shrink:0;
+  height:64px;background:var(--surface-container);border-bottom:1px solid var(--outline-variant);
+  display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;
 }
-.top-app-bar-title{
-  font-size:22px;
-  font-weight:400;
-  color:var(--on-surface);
-  flex:1;
-}
+.top-app-bar-title{font-size:22px;font-weight:400;color:var(--on-surface);flex:1;}
 .back-btn{
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  background:transparent;
-  border:none;
-  color:var(--on-surface);
-  font-size:20px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  touch-action:manipulation;
-  flex-shrink:0;
+  width:40px;height:40px;border-radius:50%;background:transparent;border:none;
+  color:var(--on-surface);font-size:20px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;touch-action:manipulation;flex-shrink:0;
 }
 .back-btn:active{background:rgba(0,0,0,0.06);}
 .step-chip{
-  background:var(--primary-container);
-  color:var(--on-primary-container);
-  border-radius:8px;
-  padding:4px 10px;
-  font-size:12px;
-  font-weight:500;
-  white-space:nowrap;
-  flex-shrink:0;
+  background:var(--primary-container);color:var(--on-primary-container);
+  border-radius:8px;padding:4px 10px;font-size:12px;font-weight:500;white-space:nowrap;flex-shrink:0;
 }
 
-/* ── BOTTOM BAR ── */
 .bottom-bar{
-  background:var(--surface-container);
-  border-top:1px solid var(--outline-variant);
-  padding:12px 16px;
-  padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  gap:8px;
-  flex-shrink:0;
+  background:var(--surface-container);border-top:1px solid var(--outline-variant);
+  padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:row;align-items:center;gap:8px;flex-shrink:0;
 }
 .bottom-bar-spacer{flex:1;}
 
-/* ── BUTTONS ── */
 .btn-filled{
-  -webkit-appearance:none;
-  appearance:none;
-  background:#006B63;
-  background:var(--primary);
-  color:#FFFFFF;
-  color:var(--on-primary);
-  border:none;
-  border-radius:20px;
-  height:40px;
-  padding:0 24px;
-  font-size:14px;
-  font-weight:500;
-  font-family:'Roboto',sans-serif;
-  cursor:pointer;
-  touch-action:manipulation;
-  transition:opacity .15s;
-  white-space:nowrap;
+  -webkit-appearance:none;appearance:none;background:var(--primary);color:var(--on-primary);
+  border:none;border-radius:20px;height:40px;padding:0 24px;font-size:14px;font-weight:500;
+  font-family:'Roboto',sans-serif;cursor:pointer;touch-action:manipulation;
+  transition:opacity .15s;white-space:nowrap;
 }
 .btn-filled:active{opacity:.8;}
-
 .btn-outlined{
-  -webkit-appearance:none;
-  appearance:none;
-  background:transparent;
-  color:#006B63;
-  color:var(--primary);
-  border:2px solid #006B63;
-  border:2px solid var(--primary);
-  border-radius:20px;
-  height:40px;
-  padding:0 24px;
-  font-size:14px;
-  font-weight:500;
-  font-family:'Roboto',sans-serif;
-  cursor:pointer;
-  touch-action:manipulation;
-  transition:opacity .15s;
-  white-space:nowrap;
+  -webkit-appearance:none;appearance:none;background:transparent;color:var(--primary);
+  border:2px solid var(--primary);border-radius:20px;height:40px;padding:0 24px;
+  font-size:14px;font-weight:500;font-family:'Roboto',sans-serif;cursor:pointer;
+  touch-action:manipulation;transition:opacity .15s;white-space:nowrap;
 }
 .btn-outlined:active{opacity:.7;}
-
 .btn-text{
-  -webkit-appearance:none;
-  appearance:none;
-  background:transparent;
-  color:#006B63;
-  color:var(--primary);
-  border:none;
-  border-radius:20px;
-  height:40px;
-  padding:0 12px;
-  font-size:14px;
-  font-weight:500;
-  font-family:'Roboto',sans-serif;
-  cursor:pointer;
-  touch-action:manipulation;
-  transition:opacity .15s;
-  white-space:nowrap;
+  -webkit-appearance:none;appearance:none;background:transparent;color:var(--primary);
+  border:none;border-radius:20px;height:40px;padding:0 12px;font-size:14px;font-weight:500;
+  font-family:'Roboto',sans-serif;cursor:pointer;touch-action:manipulation;
+  transition:opacity .15s;white-space:nowrap;
 }
 .btn-text:active{opacity:.7;}
+.btn-large{height:48px;border-radius:24px;padding:0 28px;font-size:15px;}
 
-.btn-large{
-  height:48px;
-  border-radius:24px;
-  padding:0 28px;
-  font-size:15px;
-}
+.card{background:var(--surface-container);border-radius:12px;padding:16px;width:100%;}
 
-/* ── CARDS ── */
-.card{
-  background:var(--surface-container);
-  border-radius:12px;
-  padding:16px;
-  width:100%;
-}
+/* ── WELCOME ── */
+.hero-section{display:flex;flex-direction:column;align-items:center;padding:24px 16px 12px;gap:8px;}
+.hero-icon{font-size:52px;line-height:1;margin-bottom:4px;}
+.hero-title{font-size:26px;font-weight:500;color:var(--on-surface);letter-spacing:0;text-align:center;}
+.hero-subtitle{font-size:14px;color:var(--on-surface-variant);text-align:center;max-width:280px;line-height:1.55;}
 
-/* ── WELCOME SCREEN ── */
-.hero-section{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:28px 16px 20px;
-  gap:8px;
-}
-.hero-icon{
-  font-size:52px;
-  line-height:1;
-  margin-bottom:4px;
-}
-.hero-title{
-  font-size:28px;
-  font-weight:400;
-  color:var(--on-surface);
-  letter-spacing:0;
-}
-.hero-subtitle{
-  font-size:14px;
-  color:var(--on-surface-variant);
-  text-align:center;
-}
-
-.mic-check-label{
-  font-size:12px;
-  font-weight:500;
-  color:var(--on-surface-variant);
-  letter-spacing:0.8px;
-  text-transform:uppercase;
-  margin-bottom:12px;
-}
-.level-label{
-  font-size:12px;
-  color:var(--on-surface-variant);
-  letter-spacing:0.5px;
-  text-transform:uppercase;
-  margin-bottom:6px;
-}
-.level-bar-track{
-  width:100%;
-  height:8px;
-  background:var(--surface-container-highest);
-  border-radius:4px;
-  overflow:hidden;
-}
-.level-bar-fill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,var(--success),var(--warning),var(--error));
-  border-radius:4px;
-  transition:width .08s;
-}
-.level-db{
-  font-size:45px;
-  font-weight:300;
-  color:var(--primary);
-  text-align:center;
-  margin-top:12px;
-  line-height:1;
-  letter-spacing:-1px;
-}
-.level-status{
-  font-size:14px;
-  color:var(--on-surface-variant);
-  text-align:center;
-  margin-top:6px;
-  min-height:20px;
-}
-
-.howto-steps{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.howto-step{
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-}
-.howto-num{
-  width:24px;
-  height:24px;
-  border-radius:50%;
-  background:var(--primary-container);
-  color:var(--on-primary-container);
-  font-size:12px;
-  font-weight:500;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-shrink:0;
-  margin-top:1px;
-}
-.howto-text{
-  font-size:14px;
-  color:var(--on-surface-variant);
-  line-height:1.5;
-  padding-top:2px;
-}
-
-.noise-warn-card{
-  background:var(--warning-container);
-  border-radius:12px;
-  padding:14px 16px;
-  display:none;
-  gap:8px;
-  align-items:flex-start;
-}
-.noise-warn-card.visible{display:flex;}
-.noise-warn-text{
-  font-size:14px;
-  color:var(--warning);
-  line-height:1.5;
-}
-
-/* ── CAPTURE SCREEN ── */
-.capture-header{
-  height:64px;
-  background:var(--surface-container);
-  border-bottom:1px solid var(--outline-variant);
-  display:flex;
-  align-items:center;
-  padding:0 16px;
-  gap:12px;
-  flex-shrink:0;
-}
-.capture-title{
-  font-size:22px;
-  font-weight:400;
-  color:var(--on-surface);
-  flex:1;
-}
-.sweep-chip{
-  background:var(--primary-container);
-  color:var(--on-primary-container);
-  border-radius:8px;
-  padding:4px 10px;
-  font-size:12px;
-  font-weight:500;
-}
-
-.canvas-card{
-  background:#FFFFFF;
-  border-radius:12px;
-  overflow:hidden;
-  flex:1;
-  min-height:180px;
+.steps-row{display:flex;gap:8px;width:100%;}
+.step-card{
+  flex:1;background:var(--surface);border-radius:12px;padding:14px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
   border:1px solid var(--outline-variant);
 }
-.canvas-card canvas{
-  display:block;
-  width:100%;
-  height:100%;
+.step-card-icon{font-size:24px;line-height:1;}
+.step-card-label{font-size:12px;font-weight:500;color:var(--on-surface);text-align:center;}
+.step-card-sub{font-size:11px;color:var(--on-surface-variant);text-align:center;line-height:1.4;}
+
+.needs-list{display:flex;flex-direction:column;gap:10px;}
+.needs-item{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--on-surface-variant);}
+.needs-item-icon{font-size:20px;flex-shrink:0;width:24px;text-align:center;}
+
+.edu-callout{
+  background:var(--primary-container);border-radius:10px;padding:14px 16px;
+  font-size:13px;color:var(--on-primary-container);line-height:1.55;
 }
 
-.status-row{
-  display:flex;
-  gap:20px;
-  flex-wrap:wrap;
-  align-items:center;
+/* ── SETUP SCREENS ── */
+.setup-diagram{
+  background:var(--surface);border-radius:12px;border:1px solid var(--outline-variant);
+  padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;
 }
-.status-item{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  font-size:12px;
-  color:var(--on-surface-variant);
-}
-.status-item b{
-  font-weight:500;
-  color:var(--on-surface);
-}
-.rec-dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:var(--error);
-  animation:blink 1s step-start infinite;
-  flex-shrink:0;
-}
+.setup-diagram-caption{font-size:12px;color:var(--on-surface-variant);text-align:center;line-height:1.5;}
+
+.setup-list{display:flex;flex-direction:column;gap:12px;}
+.setup-item{display:flex;gap:12px;align-items:flex-start;}
+.setup-item-icon{font-size:18px;line-height:1.3;flex-shrink:0;width:24px;text-align:center;}
+.setup-item-text{font-size:14px;color:var(--on-surface);line-height:1.55;}
+.setup-item-text b{font-weight:500;}
+.setup-item-text small{color:var(--on-surface-variant);font-size:13px;display:block;margin-top:2px;}
+
+.tip-card{background:var(--warning-container);border-radius:10px;padding:14px 16px;}
+.tip-card-title{font-size:11px;font-weight:500;color:var(--warning);letter-spacing:.7px;text-transform:uppercase;margin-bottom:5px;}
+.tip-card-body{font-size:13px;color:var(--warning);line-height:1.55;}
+
+/* ── MIC CHECK ── */
+.mic-check-label{font-size:12px;font-weight:500;color:var(--on-surface-variant);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px;}
+.level-label{font-size:12px;color:var(--on-surface-variant);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;}
+.level-bar-track{width:100%;height:8px;background:var(--surface-container-highest);border-radius:4px;overflow:hidden;}
+.level-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--success),var(--warning),var(--error));border-radius:4px;transition:width .08s;}
+.level-db{font-size:45px;font-weight:300;color:var(--primary);text-align:center;margin-top:12px;line-height:1;letter-spacing:-1px;}
+.level-status{font-size:14px;color:var(--on-surface-variant);text-align:center;margin-top:6px;min-height:20px;}
+
+.noise-warn-card{background:var(--warning-container);border-radius:12px;padding:14px 16px;display:none;gap:8px;align-items:flex-start;}
+.noise-warn-card.visible{display:flex;}
+.noise-warn-text{font-size:14px;color:var(--warning);line-height:1.5;}
+
+/* ── CAPTURE ── */
+.capture-header{height:64px;background:var(--surface-container);border-bottom:1px solid var(--outline-variant);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;}
+.capture-title{font-size:22px;font-weight:400;color:var(--on-surface);flex:1;}
+.sweep-chip{background:var(--primary-container);color:var(--on-primary-container);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:500;}
+
+.canvas-card{background:#FFFFFF;border-radius:12px;overflow:hidden;flex:1;min-height:180px;border:1px solid var(--outline-variant);}
+.canvas-card canvas{display:block;width:100%;height:100%;}
+
+.status-row{display:flex;gap:20px;flex-wrap:wrap;align-items:center;}
+.status-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--on-surface-variant);}
+.status-item b{font-weight:500;color:var(--on-surface);}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:var(--error);animation:blink 1s step-start infinite;flex-shrink:0;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
 
-.progress-track{
-  width:100%;
-  height:4px;
-  background:var(--surface-container-highest);
-  border-radius:2px;
-  overflow:hidden;
-}
-.progress-fill{
-  height:100%;
-  width:0%;
-  background:var(--primary);
-  border-radius:2px;
-  transition:width .3s;
-}
-.progress-label{
-  font-size:12px;
-  color:var(--on-surface-variant);
-  margin-top:6px;
-  min-height:18px;
-}
+.progress-track{width:100%;height:4px;background:var(--surface-container-highest);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;width:0%;background:var(--primary);border-radius:2px;transition:width .3s;}
+.progress-label{font-size:12px;color:var(--on-surface-variant);margin-top:6px;min-height:18px;}
 
-/* ── PROCESSING SCREEN ── */
-.processing-center{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:28px;
-  padding:32px;
-}
-.processing-title{
-  font-size:28px;
-  font-weight:400;
-  color:var(--on-surface);
-}
-.processing-progress-wrap{
-  width:100%;
-  max-width:360px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.processing-step{
-  font-size:14px;
-  color:var(--on-surface-variant);
-  text-align:center;
-}
-.processing-hint{
-  font-size:12px;
-  color:var(--outline);
-}
+/* ── PROCESSING ── */
+.processing-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:32px;}
+.processing-title{font-size:28px;font-weight:400;color:var(--on-surface);}
+.processing-progress-wrap{width:100%;max-width:360px;display:flex;flex-direction:column;gap:8px;}
+.processing-step{font-size:14px;color:var(--on-surface-variant);text-align:center;}
+.processing-hint{font-size:12px;color:var(--outline);}
 
-/* ── RESULT SCREENS ── */
-.section-header{
-  font-size:12px;
-  font-weight:500;
-  color:var(--on-surface-variant);
-  letter-spacing:1px;
-  text-transform:uppercase;
-  padding:4px 0 2px;
-}
-
-/* ── INSIGHT CARDS ── */
-.insights{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.insight-card{
-  border-radius:12px;
-  padding:14px 16px;
-}
+/* ── RESULTS ── */
+.section-header{font-size:12px;font-weight:500;color:var(--on-surface-variant);letter-spacing:1px;text-transform:uppercase;padding:4px 0 2px;}
+.insights{display:flex;flex-direction:column;gap:8px;}
+.insight-card{border-radius:12px;padding:14px 16px;}
 .insight-card.green{background:var(--success-container);}
 .insight-card.yellow{background:var(--warning-container);}
 .insight-card.red{background:var(--error-container);}
-.insight-title{
-  font-size:13px;
-  font-weight:500;
-  margin-bottom:4px;
-  line-height:1.4;
-}
+.insight-title{font-size:13px;font-weight:500;margin-bottom:4px;line-height:1.4;}
 .insight-card.green .insight-title{color:var(--success);}
 .insight-card.yellow .insight-title{color:var(--warning);}
 .insight-card.red .insight-title{color:var(--error);}
-.insight-body{
-  font-size:13px;
-  font-weight:400;
-  color:var(--on-surface-variant);
-  line-height:1.5;
-}
+.insight-body{font-size:13px;font-weight:400;color:var(--on-surface-variant);line-height:1.5;}
 
-/* ── RT60 CHART ── */
-.rt60-chart-container{
-  display:flex;
-  flex-direction:row;
-  gap:8px;
-  height:160px;
-  align-items:flex-end;
-}
-.rt60-column{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-  flex:1;
-  height:100%;
-}
-.rt60-bar-area{
-  flex:1;
-  width:100%;
-  position:relative;
-  display:flex;
-  align-items:flex-end;
-  background:var(--surface-container-highest);
-  border-radius:4px;
-  overflow:hidden;
-}
-.rt60-ideal-zone{
-  position:absolute;
-  left:0;right:0;
-  background:rgba(0,107,99,0.11);
-  border-top:2px dashed rgba(0,107,99,0.55);
-  border-bottom:2px dashed rgba(0,107,99,0.55);
-}
-.rt60-bar-fill{
-  width:100%;
-  border-radius:4px 4px 0 0;
-  transition:height .5s;
-  position:relative;
-  z-index:1;
-}
+/* ── RT60 ── */
+.rt60-chart-container{display:flex;flex-direction:row;gap:8px;height:160px;align-items:flex-end;}
+.rt60-column{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;height:100%;}
+.rt60-bar-area{flex:1;width:100%;position:relative;display:flex;align-items:flex-end;background:var(--surface-container-highest);border-radius:4px;overflow:hidden;}
+.rt60-ideal-zone{position:absolute;left:0;right:0;background:rgba(0,107,99,0.11);border-top:2px dashed rgba(0,107,99,0.55);border-bottom:2px dashed rgba(0,107,99,0.55);}
+.rt60-bar-fill{width:100%;border-radius:4px 4px 0 0;transition:height .5s;position:relative;z-index:1;}
 .rt60-bar-fill.green{background:var(--success);}
 .rt60-bar-fill.yellow{background:var(--warning);}
 .rt60-bar-fill.red{background:var(--error);}
-.rt60-val-label{
-  font-size:11px;
-  font-weight:400;
-  color:var(--on-surface);
-  text-align:center;
-  white-space:nowrap;
-}
-.rt60-hz-label{
-  font-size:11px;
-  color:var(--on-surface-variant);
-  text-align:center;
-  white-space:nowrap;
-}
-.rt60-legend-note{
-  font-size:12px;
-  color:var(--on-surface-variant);
-  text-align:center;
-  line-height:1.5;
-}
-.wf-caption{
-  font-size:12px;
-  color:var(--on-surface-variant);
-  line-height:1.5;
-  text-align:center;
-}
+.rt60-val-label{font-size:11px;font-weight:400;color:var(--on-surface);text-align:center;white-space:nowrap;}
+.rt60-hz-label{font-size:11px;color:var(--on-surface-variant);text-align:center;white-space:nowrap;}
+.rt60-legend-note{font-size:12px;color:var(--on-surface-variant);text-align:center;line-height:1.5;}
 
-/* ── DESKTOP ── */
-@media(min-width:600px){
-  .screen-body{
-    max-width:600px;
-    align-self:center;
-    width:100%;
-  }
-  .canvas-card{min-height:300px;}
-}
-
-/* ── CHART LEGEND (external, below canvas) ── */
+/* ── CHART LEGEND ── */
 .chart-wrap{display:flex;flex-direction:column;gap:8px;}
 .chart-legend{display:flex;flex-direction:row;flex-wrap:wrap;gap:16px;padding:0 6px;}
 .legend-item{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--on-surface-variant);}
@@ -577,222 +222,448 @@ body{
 .peq-q{color:var(--on-surface-variant);}
 .peq-type{color:var(--on-surface-variant);font-size:11px;}
 
+@media(min-width:600px){
+  .screen-body{max-width:600px;align-self:center;width:100%;}
+  .canvas-card{min-height:300px;}
+}
+
 .hidden{display:none!important;}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════
+<!-- ══════════════════════════════════════
      SCREEN 1 — WELCOME
-════════════════════════════════════ -->
+════════════════════════════════════════ -->
 <div id="screen-welcome" class="screen active">
-  <div class="screen-body">
+  <div class="screen-body" style="padding-top:20px;">
 
     <div class="hero-section">
       <div class="hero-icon">🎙</div>
-      <div class="hero-title">Room Analyzer</div>
-      <div class="hero-subtitle">Measure frequency response and decay time in your listening space</div>
+      <div class="hero-title">Make Your Stereo Sound Great</div>
+      <div class="hero-subtitle">A quick setup guide + room measurement that gives you a custom EQ for your exact listening space.</div>
+    </div>
+
+    <div class="steps-row">
+      <div class="step-card">
+        <div class="step-card-icon">📐</div>
+        <div class="step-card-label">Place</div>
+        <div class="step-card-sub">Speaker setup guide</div>
+      </div>
+      <div class="step-card">
+        <div class="step-card-icon">🎤</div>
+        <div class="step-card-label">Measure</div>
+        <div class="step-card-sub">Room analysis from your seat</div>
+      </div>
+      <div class="step-card">
+        <div class="step-card-icon">🎛</div>
+        <div class="step-card-label">Tune</div>
+        <div class="step-card-sub">Custom EQ for your room</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="mic-check-label">What you'll need</div>
+      <div class="needs-list">
+        <div class="needs-item"><div class="needs-item-icon">📱</div>This phone — it's your microphone</div>
+        <div class="needs-item"><div class="needs-item-icon">🔊</div>Your stereo speakers, connected and on</div>
+        <div class="needs-item"><div class="needs-item-icon">🤫</div>A quiet room for about 30 seconds</div>
+      </div>
+    </div>
+
+    <div class="edu-callout">
+      Your room's shape and surfaces color the sound before it reaches your ears — sometimes by 10–15 dB. We measure that coloring and tell you exactly how to fix it.
+    </div>
+
+  </div>
+  <div class="bottom-bar">
+    <div class="bottom-bar-spacer"></div>
+    <button class="btn-filled btn-large" id="btn-welcome-start">Let's Start →</button>
+    <div class="bottom-bar-spacer"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 2 — SPEAKER PLACEMENT (NEW)
+════════════════════════════════════════ -->
+<div id="screen-setup-placement" class="screen">
+  <div class="top-app-bar">
+    <button class="back-btn" id="btn-placement-back">←</button>
+    <div class="top-app-bar-title">Place Your Speakers</div>
+    <div class="step-chip">Step 1 of 2</div>
+  </div>
+
+  <div class="screen-body">
+
+    <div class="setup-diagram">
+      <!-- Equilateral triangle — top-down room view -->
+      <svg viewBox="0 0 300 248" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:300px;display:block;">
+        <defs>
+          <marker id="arrowToe" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+            <polygon points="0 0,7 3.5,0 7" fill="#7D5700" opacity="0.8"/>
+          </marker>
+        </defs>
+        <!-- Room -->
+        <rect x="6" y="6" width="288" height="236" rx="12" fill="#E9F2F0" stroke="#BEC9C8" stroke-width="1.5"/>
+        <text x="150" y="22" text-anchor="middle" font-family="Roboto,sans-serif" font-size="9" fill="#BEC9C8" letter-spacing="3">FRONT WALL</text>
+
+        <!-- Triangle lines: L=(78,82) R=(222,82) Seat=(150,215) -->
+        <line x1="78" y1="82" x2="222" y2="82" stroke="#006B63" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>
+        <line x1="78" y1="82" x2="150" y2="215" stroke="#006B63" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>
+        <line x1="222" y1="82" x2="150" y2="215" stroke="#006B63" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>
+
+        <!-- Equal-length tick marks (one per side, perpendicular to each side) -->
+        <line x1="150" y1="77" x2="150" y2="87" stroke="#006B63" stroke-width="2" opacity="0.7"/>
+        <line x1="111" y1="151" x2="117" y2="145" stroke="#006B63" stroke-width="2" opacity="0.7"/>
+        <line x1="183" y1="145" x2="189" y2="151" stroke="#006B63" stroke-width="2" opacity="0.7"/>
+
+        <!-- "equal" label on top side -->
+        <text x="150" y="71" text-anchor="middle" font-family="Roboto,sans-serif" font-size="9" fill="#006B63" opacity="0.85">← same distance →</text>
+
+        <!-- Left speaker (rotated 18° CW = toed-in toward seat) -->
+        <g transform="rotate(18,78,82)">
+          <rect x="58" y="50" width="40" height="64" rx="7" fill="#006B63"/>
+          <circle cx="78" cy="67" r="12" fill="#9EF2EA"/>
+          <circle cx="78" cy="67" r="5" fill="#006B63"/>
+          <ellipse cx="78" cy="94" rx="15" ry="15" fill="#004F49"/>
+          <ellipse cx="78" cy="94" rx="8" ry="8" fill="#003d38"/>
+        </g>
+
+        <!-- Right speaker (rotated 18° CCW = toed-in toward seat) -->
+        <g transform="rotate(-18,222,82)">
+          <rect x="202" y="50" width="40" height="64" rx="7" fill="#006B63"/>
+          <circle cx="222" cy="67" r="12" fill="#9EF2EA"/>
+          <circle cx="222" cy="67" r="5" fill="#006B63"/>
+          <ellipse cx="222" cy="94" rx="15" ry="15" fill="#004F49"/>
+          <ellipse cx="222" cy="94" rx="8" ry="8" fill="#003d38"/>
+        </g>
+
+        <!-- Speaker L / R labels -->
+        <text x="78" y="43" text-anchor="middle" font-family="Roboto,sans-serif" font-size="13" font-weight="700" fill="#3F4948">L</text>
+        <text x="222" y="43" text-anchor="middle" font-family="Roboto,sans-serif" font-size="13" font-weight="700" fill="#3F4948">R</text>
+
+        <!-- Toe-in arrows pointing toward sweet spot -->
+        <line x1="78" y1="126" x2="122" y2="162" stroke="#7D5700" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#arrowToe)" opacity="0.7"/>
+        <line x1="222" y1="126" x2="178" y2="162" stroke="#7D5700" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#arrowToe)" opacity="0.7"/>
+        <text x="150" y="157" text-anchor="middle" font-family="Roboto,sans-serif" font-size="9" fill="#7D5700" opacity="0.9">angle toward you</text>
+
+        <!-- Listening seat -->
+        <ellipse cx="150" cy="215" rx="30" ry="17" fill="#DCE8E6" stroke="#006B63" stroke-width="2"/>
+        <text x="150" y="220" text-anchor="middle" font-family="sans-serif" font-size="18">🪑</text>
+        <text x="150" y="240" text-anchor="middle" font-family="Roboto,sans-serif" font-size="10" fill="#3F4948" font-weight="500">You (sweet spot)</text>
+      </svg>
+      <div class="setup-diagram-caption">Top-down view · All three sides of the triangle should be roughly equal length</div>
+    </div>
+
+    <div class="card">
+      <div class="mic-check-label">The Golden Triangle</div>
+      <div class="setup-list">
+        <div class="setup-item">
+          <div class="setup-item-icon">📏</div>
+          <div class="setup-item-text">
+            <b>Equal distances</b> — speaker-to-speaker gap equals the distance from each speaker to your head
+            <small>If speakers are 6 ft apart, sit 6 ft from each one</small>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-item-icon">↗️</div>
+          <div class="setup-item-text">
+            <b>Toe them in</b> — angle each speaker slightly inward so they point toward your seat
+            <small>10–20° is plenty. Both should aim at your head, not past it</small>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-item-icon">👂</div>
+          <div class="setup-item-text">
+            <b>Tweeter at ear height</b> — when seated, the small driver should be level with your ears
+            <small>Use a stand, shelf, or a stack of books to get the height right</small>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-item-icon">🧱</div>
+          <div class="setup-item-text">
+            <b>Off the walls</b> — pull speakers at least 2 ft from the rear wall to reduce bass buildup
+            <small>The further from room corners the better</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="edu-callout">
+      Good placement does more than any cable upgrade or EQ trick. A speaker in the wrong spot creates problems no amount of tuning can fully fix. Even an approximate version of the triangle makes a huge difference.
+    </div>
+
+  </div>
+  <div class="bottom-bar">
+    <div class="bottom-bar-spacer"></div>
+    <button class="btn-filled btn-large" id="btn-placement-next">Speakers Are Set →</button>
+    <div class="bottom-bar-spacer"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 3 — MIC POSITION + CHECK (NEW)
+════════════════════════════════════════ -->
+<div id="screen-setup-position" class="screen">
+  <div class="top-app-bar">
+    <button class="back-btn" id="btn-position-back">←</button>
+    <div class="top-app-bar-title">Get in Position</div>
+    <div class="step-chip">Step 2 of 2</div>
+  </div>
+
+  <div class="screen-body">
+
+    <div class="setup-diagram">
+      <!-- Phone position — top-down view -->
+      <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:300px;display:block;">
+        <defs>
+          <marker id="micArr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+            <polygon points="0 0,7 3.5,0 7" fill="#006B63"/>
+          </marker>
+        </defs>
+        <!-- Room -->
+        <rect x="6" y="6" width="288" height="188" rx="12" fill="#E9F2F0" stroke="#BEC9C8" stroke-width="1.5"/>
+        <text x="150" y="21" text-anchor="middle" font-family="Roboto,sans-serif" font-size="9" fill="#BEC9C8" letter-spacing="3">SPEAKERS</text>
+
+        <!-- Left speaker (facing right) -->
+        <rect x="22" y="62" width="18" height="46" rx="4" fill="#006B63" opacity="0.85"/>
+        <polygon points="40,74 58,82 40,90" fill="#006B63" opacity="0.4"/>
+        <text x="31" y="57" text-anchor="middle" font-family="Roboto,sans-serif" font-size="11" font-weight="700" fill="#3F4948">L</text>
+
+        <!-- Right speaker (facing left) -->
+        <rect x="260" y="62" width="18" height="46" rx="4" fill="#006B63" opacity="0.85"/>
+        <polygon points="260,74 242,82 260,90" fill="#006B63" opacity="0.4"/>
+        <text x="269" y="57" text-anchor="middle" font-family="Roboto,sans-serif" font-size="11" font-weight="700" fill="#3F4948">R</text>
+
+        <!-- Sound waves from left speaker -->
+        <path d="M 60 82 C 76 73,76 91,60 82" fill="none" stroke="#006B63" stroke-width="1.2" opacity="0.3"/>
+        <path d="M 66 82 C 90 70,90 94,66 82" fill="none" stroke="#006B63" stroke-width="1.2" opacity="0.2"/>
+        <path d="M 74 82 C 108 66,108 98,74 82" fill="none" stroke="#006B63" stroke-width="1.2" opacity="0.12"/>
+
+        <!-- Sound waves from right speaker -->
+        <path d="M 240 82 C 224 73,224 91,240 82" fill="none" stroke="#006B63" stroke-width="1.2" opacity="0.3"/>
+        <path d="M 234 82 C 210 70,210 94,234 82" fill="none" stroke="#006B63" stroke-width="1.2" opacity="0.2"/>
+        <path d="M 226 82 C 192 66,192 98,226 82" fill="none" stroke="#006B63" stroke-width="1.2" opacity="0.12"/>
+
+        <!-- Person's head (top-down), facing upward = toward speakers -->
+        <circle cx="150" cy="155" r="20" fill="#DCE8E6" stroke="#3F4948" stroke-width="1.5"/>
+        <ellipse cx="150" cy="138" rx="3.5" ry="5.5" fill="#3F4948" opacity="0.3"/>
+
+        <!-- Phone (portrait, held vertical, mic end toward speakers = upward in top-down view) -->
+        <rect x="143" y="98" width="14" height="28" rx="3" fill="#191C1C"/>
+        <rect x="145" y="101" width="10" height="21" rx="2" fill="#2a2a2a"/>
+        <!-- Mic dot at top (facing toward speakers) -->
+        <circle cx="150" cy="99" r="2.8" fill="#9EF2EA"/>
+
+        <!-- Arrow from mic toward speakers -->
+        <line x1="150" y1="95" x2="150" y2="82" stroke="#006B63" stroke-width="1.5" marker-end="url(#micArr)"/>
+        <text x="163" y="88" font-family="Roboto,sans-serif" font-size="9" fill="#006B63" font-weight="600">MIC end</text>
+
+        <!-- Bottom caption -->
+        <text x="150" y="186" text-anchor="middle" font-family="Roboto,sans-serif" font-size="10" fill="#3F4948">Sit in your chair · hold phone at ear height · mic toward speakers</text>
+      </svg>
+      <div class="setup-diagram-caption">The mic end of your phone faces forward toward your speakers. Stay still during the 30-second sweep.</div>
+    </div>
+
+    <div class="card">
+      <div class="mic-check-label">Before You Hit Start</div>
+      <div class="setup-list">
+        <div class="setup-item">
+          <div class="setup-item-icon">🪑</div>
+          <div class="setup-item-text">
+            <b>Sit in your sweet spot</b> — your normal listening chair, exactly where you enjoy music
+            <small>We measure what your ears actually hear from that position</small>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-item-icon">📱</div>
+          <div class="setup-item-text">
+            <b>Hold phone at ear height</b>, mic end facing your speakers
+            <small>Your mic is on one of the short edges — try both and see which points more toward the speakers</small>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-item-icon">🔊</div>
+          <div class="setup-item-text">
+            <b>Set volume to normal listening level</b> — not whisper-quiet, not party loud
+            <small>Measure at the volume you actually use</small>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-item-icon">🤫</div>
+          <div class="setup-item-text">
+            <b>Quiet the room</b> — close doors, turn off fans, AC, and TV
+            <small>Background noise corrupts the measurement</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-card">
+      <div class="tip-card-title">💡 What you'll hear</div>
+      <div class="tip-card-body">The app plays a rising tone — low to high — through your speakers three times. It sounds unusual. That's the measurement sweep. Stay still and quiet during each 6-second pass.</div>
     </div>
 
     <!-- Mic check card -->
     <div class="card">
       <div class="mic-check-label">Mic Check</div>
-      <div class="level-label">Input Level</div>
+      <div class="level-label">Background Noise Level</div>
       <div class="level-bar-track">
         <div class="level-bar-fill" id="spl-bar"></div>
       </div>
       <div class="level-db" id="spl-num">— dB</div>
-      <div class="level-status" id="spl-status">Waiting for microphone permission</div>
+      <div class="level-status" id="spl-status">Enable your mic to check noise level</div>
     </div>
 
-    <!-- Noise warning card -->
     <div class="noise-warn-card" id="noise-warn">
-      <div class="noise-warn-text">Background noise is high. Measurement accuracy will suffer — try a quieter space or close windows.</div>
-    </div>
-
-    <!-- How to card -->
-    <div class="card">
-      <div class="mic-check-label" style="margin-bottom:14px;">How to Measure</div>
-      <div class="howto-steps">
-        <div class="howto-step">
-          <div class="howto-num">1</div>
-          <div class="howto-text">Place your device mic facing the room</div>
-        </div>
-        <div class="howto-step">
-          <div class="howto-num">2</div>
-          <div class="howto-text">Tap Start — the app plays 3 sweeps through your speakers</div>
-        </div>
-        <div class="howto-step">
-          <div class="howto-num">3</div>
-          <div class="howto-text">Keep the room quiet while sweeps play</div>
-        </div>
-        <div class="howto-step">
-          <div class="howto-num">4</div>
-          <div class="howto-text">Results appear automatically</div>
-        </div>
-      </div>
+      <div class="noise-warn-text">Background noise is too high. Close windows, turn off fans and AC, then try again. High noise gives inaccurate results.</div>
     </div>
 
   </div>
-
-  <!-- Bottom bar -->
   <div class="bottom-bar">
     <div class="bottom-bar-spacer"></div>
-    <button class="btn-filled btn-large hidden" id="btn-start">Start Measurement</button>
     <button class="btn-filled btn-large" id="btn-mic-req">Enable Microphone</button>
+    <button class="btn-filled btn-large hidden" id="btn-start">Start Measurement</button>
     <div class="bottom-bar-spacer"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     SCREEN 2 — CAPTURE
-════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     SCREEN 4 — CAPTURE
+════════════════════════════════════════ -->
 <div id="screen-capture" class="screen">
   <div class="capture-header">
-    <div class="capture-title">Recording</div>
+    <div class="capture-title">Measuring…</div>
     <div class="sweep-chip" id="sweep-chip">Sweep 1 / 3</div>
   </div>
-
   <div class="screen-body" style="gap:14px;">
     <div class="canvas-card" id="capture-canvas-card" style="flex:1;min-height:200px;">
       <canvas id="capture-canvas"></canvas>
     </div>
-
     <div class="status-row">
-      <div class="status-item">
-        <div class="rec-dot"></div>
-        <span id="cap-state">REC</span>
-      </div>
+      <div class="status-item"><div class="rec-dot"></div><span id="cap-state">REC</span></div>
       <div class="status-item">SWEEP <b id="cap-sweep">—</b></div>
       <div class="status-item">PEAK <b id="cap-peak">—</b></div>
     </div>
-
     <div>
-      <div class="progress-track">
-        <div class="progress-fill" id="cap-progress"></div>
-      </div>
+      <div class="progress-track"><div class="progress-fill" id="cap-progress"></div></div>
       <div class="progress-label" id="cap-step">Initializing…</div>
+    </div>
+    <div style="font-size:13px;color:var(--on-surface-variant);line-height:1.5;text-align:center;">
+      Stay still and keep quiet while sweeps play through your speakers.
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     SCREEN 3 — PROCESSING
-════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     SCREEN 5 — PROCESSING
+════════════════════════════════════════ -->
 <div id="screen-processing" class="screen">
   <div class="processing-center">
     <div class="processing-title">Analyzing</div>
     <div class="processing-progress-wrap">
-      <div class="progress-track">
-        <div class="progress-fill" id="proc-progress"></div>
-      </div>
+      <div class="progress-track"><div class="progress-fill" id="proc-progress"></div></div>
       <div class="processing-step" id="proc-step">Extracting impulse response…</div>
     </div>
-    <div class="processing-hint">This takes a few seconds</div>
+    <div class="processing-hint">Crunching the numbers — just a few seconds</div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     SCREEN 4 — RESULT: FREQ RESPONSE
-════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     SCREEN 6 — RESULT: FREQ RESPONSE
+════════════════════════════════════════ -->
 <div id="screen-result-freq" class="screen">
   <div class="top-app-bar">
     <div class="top-app-bar-title">Frequency Response</div>
     <div class="step-chip">1 of 3</div>
   </div>
-
   <div class="screen-body">
+    <div style="font-size:13px;color:var(--on-surface-variant);line-height:1.55;">
+      How loud each frequency is at your seat. The dashed line is the <b style="color:var(--on-surface);">Harman target</b> — what research shows sounds best to most people. Your curve should roughly follow it.
+    </div>
     <div class="chart-wrap">
       <div class="canvas-card" id="freq-canvas-card" style="min-height:220px;">
         <canvas id="freq-canvas"></canvas>
       </div>
       <div class="chart-legend">
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:1.5px dashed rgba(120,80,0,0.65)"></span>Harman target
-        </span>
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:2.5px solid #006B63"></span>Smoothed
-        </span>
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:1.5px solid rgba(0,107,99,0.4)"></span>Raw
-        </span>
+        <span class="legend-item"><span class="legend-swatch" style="border-top:1.5px dashed rgba(120,80,0,0.65)"></span>Harman target</span>
+        <span class="legend-item"><span class="legend-swatch" style="border-top:2.5px solid #006B63"></span>Your room (smoothed)</span>
+        <span class="legend-item"><span class="legend-swatch" style="border-top:1.5px solid rgba(0,107,99,0.4)"></span>Raw</span>
       </div>
     </div>
-
-    <div class="section-header">Insights</div>
+    <div class="section-header">What this means</div>
     <div class="insights" id="freq-insights"></div>
   </div>
-
   <div class="bottom-bar">
     <button class="btn-text" id="btn-export-freq-png">↓ PNG</button>
     <div class="bottom-bar-spacer"></div>
-    <button class="btn-filled" id="btn-goto-rt60">RT60 →</button>
+    <button class="btn-filled" id="btn-goto-rt60">Room Liveness →</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     SCREEN 5 — RESULT: RT60
-════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     SCREEN 7 — RESULT: RT60
+════════════════════════════════════════ -->
 <div id="screen-result-rt60" class="screen">
   <div class="top-app-bar">
     <button class="back-btn" id="btn-rt60-back">←</button>
-    <div class="top-app-bar-title">Decay Time · RT60</div>
+    <div class="top-app-bar-title">Room Liveness · RT60</div>
     <div class="step-chip">2 of 3</div>
   </div>
-
   <div class="screen-body">
+    <div style="font-size:13px;color:var(--on-surface-variant);line-height:1.55;">
+      RT60 measures how long sound lingers after a note stops. Too long = muddy. Too short = unnatural. The sweet zone for a home listening room is <b style="color:var(--on-surface);">0.3 – 0.5 seconds</b>.
+    </div>
     <div class="card">
       <div class="rt60-chart-container" id="rt60-chart-container"></div>
     </div>
     <div class="rt60-legend-note">
-      <span style="color:#4ac88a">■</span> Below ideal &nbsp;
-      <span style="color:#006C4E">■</span> Ideal 0.3–0.5s &nbsp;
-      <span style="color:#C8A040">■</span> Above ideal &nbsp;
-      <span style="color:#BA1A1A">■</span> Well above (&gt;1s) &nbsp;·&nbsp; dashed band = sweet zone
+      <span style="color:rgba(100,200,148,0.9)">■</span> Below ideal &nbsp;
+      <span style="color:rgba(0,108,78,0.9)">■</span> Ideal 0.3–0.5s &nbsp;
+      <span style="color:rgba(210,165,60,0.85)">■</span> Above ideal &nbsp;
+      <span style="color:#BA1A1A">■</span> Too live (&gt;0.75s) &nbsp;· dashed = sweet zone
     </div>
-    <div class="section-header">Insights</div>
+    <div class="section-header">What this means</div>
     <div class="insights" id="rt60-insights"></div>
   </div>
-
   <div class="bottom-bar">
     <button class="btn-text" id="btn-export-rt60-png">↓ PNG</button>
     <button class="btn-text" id="btn-export-csv">↓ CSV</button>
     <div class="bottom-bar-spacer"></div>
-    <button class="btn-filled" id="btn-goto-correction">Correction →</button>
+    <button class="btn-filled" id="btn-goto-correction">EQ Correction →</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     SCREEN 6 — ROOM CORRECTION
-════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     SCREEN 8 — ROOM CORRECTION
+════════════════════════════════════════ -->
 <div id="screen-result-correction" class="screen">
   <div class="top-app-bar">
     <button class="back-btn" id="btn-corr-back">←</button>
-    <div class="top-app-bar-title">Room Correction</div>
+    <div class="top-app-bar-title">EQ Correction</div>
     <div class="step-chip">3 of 3</div>
   </div>
-
   <div class="screen-body">
+    <div style="font-size:13px;color:var(--on-surface-variant);line-height:1.55;">
+      The green curve shows how your room will sound after applying the EQ below. The dashed line is the Harman target. Corrections are applied only below 120 Hz — that's where rooms cause the most audible damage.
+    </div>
     <div class="chart-wrap">
       <div class="canvas-card" id="corr-canvas-card" style="min-height:220px;">
         <canvas id="corr-canvas"></canvas>
       </div>
       <div class="chart-legend">
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:1.5px dashed rgba(120,80,0,0.65)"></span>Harman target
-        </span>
-        <span class="legend-item">
-          <span class="legend-swatch" style="border-top:2.5px solid #006B63"></span>Predicted (corrected)
-        </span>
+        <span class="legend-item"><span class="legend-swatch" style="border-top:1.5px dashed rgba(120,80,0,0.65)"></span>Harman target</span>
+        <span class="legend-item"><span class="legend-swatch" style="border-top:2.5px solid #006B63"></span>Predicted after EQ</span>
       </div>
     </div>
-
-    <div class="section-header">Parametric EQ · corrections below 120 Hz</div>
-    <div class="peq-note">Enter these into your EQ plugin, DSP processor, or receiver. Cuts are safe to apply as-is; boost gently to taste.</div>
+    <div class="section-header">Parametric EQ Settings</div>
+    <div class="peq-note">Enter these into your receiver's built-in EQ, a DSP app (Roon, JRiver, Equalizer APO), or any parametric equalizer. <b>Cuts are always safe to apply.</b> Boosts add energy — dial in slowly and trust your ears.</div>
     <div id="peq-list"></div>
     <button class="btn-outlined" id="btn-copy-peq" style="align-self:flex-start;margin-top:4px;">Copy to Clipboard</button>
+    <div class="edu-callout">
+      After applying EQ, re-run the measurement to confirm the changes landed correctly. Room acoustics + EQ working together is how professionals tune listening rooms.
+    </div>
   </div>
-
   <div class="bottom-bar">
     <button class="btn-text" id="btn-export-corr-png">↓ PNG</button>
     <div class="bottom-bar-spacer"></div>
@@ -801,10 +672,7 @@ body{
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-//  CONSTANTS
-// ═══════════════════════════════════════════════
-const SWEEP_DURATION = 6;    // seconds per sweep
+const SWEEP_DURATION = 6;
 const NUM_SWEEPS     = 3;
 const SAMPLE_RATE    = 48000;
 const MIN_HZ         = 20;
@@ -829,18 +697,10 @@ function fToX(f,gw){
   return (Math.log10(f/MIN_HZ)/Math.log10(MAX_HZ/MIN_HZ))*gw;
 }
 
-// Harman in-room target curve (dB relative to 0 at 500 Hz–2 kHz midband)
-// Harman in-room preferred response (Olive/Welti 2013):
-// ~+6.6 dB low shelf below 105 Hz, gentle -1 dB/octave treble tilt above 2 kHz.
-// Normalized so 500–1 kHz ≈ 0 dB.
 const HARMAN_PTS=[
-  // Bass shelf — relatively flat +6.5 dB below ~80 Hz
   [20,6.5],[30,6.5],[40,6.5],[50,6.4],[63,6.2],[80,5.7],
-  // Transition region: shelf rolls down to flat midrange around 100–400 Hz
   [100,4.9],[125,3.8],[160,2.5],[200,1.6],[250,0.9],[315,0.4],[400,0.1],
-  // Flat reference
   [500,0],[630,0],[1000,-0.4],
-  // Gentle treble tilt: roughly -1 dB/octave from 1 kHz
   [1600,-1.0],[2000,-1.4],[3150,-2.2],[4000,-2.8],[5000,-3.4],
   [6300,-4.0],[8000,-4.7],[10000,-5.4],[16000,-6.5],[20000,-7.2]
 ];
@@ -857,22 +717,16 @@ function harmanAt(hz){
   return 0;
 }
 
-// ═══════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════
 let audioCtx   = null;
 let micStream  = null;
 let micSource  = null;
 let analyser   = null;
 let rafCapture = null;
 
-let freqCurve        = null;
-let rt60Values       = null;
+let freqCurve         = null;
+let rt60Values        = null;
 let smoothedFreqCurve = null;
 
-// ═══════════════════════════════════════════════
-//  SCREEN MANAGEMENT
-// ═══════════════════════════════════════════════
 let currentScreen = 'welcome';
 
 function showScreen(id){
@@ -881,19 +735,14 @@ function showScreen(id){
   currentScreen = id;
 
   if(id==='result-freq'){
-    const card = document.getElementById('freq-canvas-card');
-    const cvs  = document.getElementById('freq-canvas');
-    cvs.width  = card.clientWidth;
-    cvs.height = card.clientHeight;
+    const card=document.getElementById('freq-canvas-card');
+    const cvs=document.getElementById('freq-canvas');
+    cvs.width=card.clientWidth; cvs.height=card.clientHeight;
     drawFreqResponse();
     generateFreqInsights(freqCurve);
   }
-  if(id==='result-rt60'){
-    setTimeout(()=>{drawRT60();generateRT60Insights();},80);
-  }
-  if(id==='result-correction'){
-    setTimeout(()=>{drawCorrectionChart();generatePEQList();},80);
-  }
+  if(id==='result-rt60')  setTimeout(()=>{drawRT60();generateRT60Insights();},80);
+  if(id==='result-correction') setTimeout(()=>{drawCorrectionChart();generatePEQList();},80);
   if(id==='capture'){
     const cc=document.getElementById('capture-canvas');
     cc.width=cc.parentElement.clientWidth;
@@ -901,9 +750,13 @@ function showScreen(id){
   }
 }
 
-// ═══════════════════════════════════════════════
-//  SCREEN 1 — MIC CHECK / WELCOME
-// ═══════════════════════════════════════════════
+// ── New onboarding navigation
+document.getElementById('btn-welcome-start').addEventListener('click',()=>showScreen('setup-placement'));
+document.getElementById('btn-placement-back').addEventListener('click',()=>showScreen('welcome'));
+document.getElementById('btn-placement-next').addEventListener('click',()=>showScreen('setup-position'));
+document.getElementById('btn-position-back').addEventListener('click',()=>showScreen('setup-placement'));
+
+// ── Mic permission (lives on setup-position screen)
 let splRaf = null;
 let splAnalyser = null;
 
@@ -921,7 +774,7 @@ document.getElementById('btn-mic-req').addEventListener('click', async()=>{
 
     document.getElementById('btn-mic-req').classList.add('hidden');
     document.getElementById('btn-start').classList.remove('hidden');
-    document.getElementById('spl-status').textContent = 'Mic active — input level shown above';
+    document.getElementById('spl-status').textContent = 'Mic active — noise level shown above';
     document.getElementById('spl-status').style.color = 'var(--success)';
     startSplMeter();
   }catch(e){
@@ -943,11 +796,8 @@ function startSplMeter(){
     document.getElementById('spl-bar').style.width = pct+'%';
     document.getElementById('spl-num').textContent  = db>-100?db.toFixed(1)+' dBFS':'— dB';
     const warn = document.getElementById('noise-warn');
-    if(db > -30){
-      warn.classList.add('visible');
-    } else {
-      warn.classList.remove('visible');
-    }
+    if(db > -30) warn.classList.add('visible');
+    else warn.classList.remove('visible');
   }
   tick();
 }
@@ -959,13 +809,10 @@ document.getElementById('btn-start').addEventListener('click', ()=>{
   startMeasurement();
 });
 
-// ═══════════════════════════════════════════════
-//  SCREEN 2 — LIVE CAPTURE + SWEEP ENGINE
-// ═══════════════════════════════════════════════
+// ── Capture + sweep engine
 const capCanvas = document.getElementById('capture-canvas');
 const capCtx    = capCanvas.getContext('2d');
 
-// Generate log-swept sine as AudioBuffer
 function generateSweep(ac, duration, f1, f2){
   const n   = Math.ceil(duration * ac.sampleRate);
   const buf = ac.createBuffer(1, n, ac.sampleRate);
@@ -983,14 +830,12 @@ function generateSweep(ac, duration, f1, f2){
   return buf;
 }
 
-// Generate inverse filter (time-reversed, amplitude-weighted sweep)
 function generateInverseFilter(ac, duration, f1, f2){
-  const n      = Math.ceil(duration * ac.sampleRate);
-  const buf    = ac.createBuffer(1, n, ac.sampleRate);
-  const ch     = buf.getChannelData(0);
-  const k      = Math.log(f2/f1);
-  const sn     = generateSweep(ac, duration, f1, f2).getChannelData(0);
-  // Reverse and apply spectral whitening weight: 1/envelope = exp(-k*t/T)
+  const n   = Math.ceil(duration * ac.sampleRate);
+  const buf = ac.createBuffer(1, n, ac.sampleRate);
+  const ch  = buf.getChannelData(0);
+  const k   = Math.log(f2/f1);
+  const sn  = generateSweep(ac, duration, f1, f2).getChannelData(0);
   for(let i=0;i<n;i++){
     const t = i/ac.sampleRate;
     const w = Math.exp(-k*t/duration);
@@ -1006,7 +851,6 @@ async function startMeasurement(){
   cc.width=cc.parentElement.clientWidth; cc.height=cc.parentElement.clientHeight;
 
   const ac = audioCtx;
-  // Resume AudioContext — Android suspends it after user gesture completes
   await ac.resume();
 
   micSource = ac.createMediaStreamSource(micStream);
@@ -1021,7 +865,6 @@ async function startMeasurement(){
   const silencePost   = 1.5;
   const totalPerSweep = silencePre + sweepDur + silencePost;
 
-  // Pick a mime type the device actually supports
   const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg','']
     .find(m => m==='' || MediaRecorder.isTypeSupported(m));
 
@@ -1031,9 +874,8 @@ async function startMeasurement(){
   const chunks   = [];
   recorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
 
-  // ↓ onstop MUST be registered before stop() — Android fires it synchronously
   recorder.onstop = async () => {
-    const blob    = new Blob(chunks, {type: recorder.mimeType||'audio/webm'});
+    const blob = new Blob(chunks, {type: recorder.mimeType||'audio/webm'});
     let decoded;
     try {
       const arrBuf = await blob.arrayBuffer();
@@ -1050,12 +892,12 @@ async function startMeasurement(){
     document.getElementById('proc-step').textContent='Extracting impulse responses…';
     await new Promise(r=>setTimeout(r,80));
 
-    const sig    = decoded.getChannelData(0);
-    const sr     = decoded.sampleRate;
-    const irLen  = Math.ceil(sweepDur * sr);
-    const inv    = invBuf.getChannelData(0);
-    const avgIR  = new Float32Array(irLen);
-    let valid    = 0;
+    const sig   = decoded.getChannelData(0);
+    const sr    = decoded.sampleRate;
+    const irLen = Math.ceil(sweepDur * sr);
+    const inv   = invBuf.getChannelData(0);
+    const avgIR = new Float32Array(irLen);
+    let valid   = 0;
 
     for(let sw=0;sw<NUM_SWEEPS;sw++){
       const sStart = Math.round(sweepStartTimes[sw] * sr);
@@ -1087,7 +929,7 @@ async function startMeasurement(){
   };
 
   recorder.start(100);
-  const recordStart   = ac.currentTime;
+  const recordStart     = ac.currentTime;
   const sweepStartTimes = [];
 
   document.getElementById('cap-state').textContent='REC';
@@ -1121,20 +963,14 @@ async function startMeasurement(){
   recorder.stop();
   micSource.disconnect(); analyser.disconnect();
   cancelAnimationFrame(rafCapture);
-
-  // Release the mic immediately — no reason to hold it during processing or results
   if(micStream) micStream.getTracks().forEach(t=>t.stop());
 
   showScreen('processing');
   document.getElementById('proc-progress').style.width='10%';
   document.getElementById('proc-step').textContent='Decoding audio…';
-  // recorder.onstop fires next — already registered above
 }
 
-// ═══════════════════════════════════════════════
-//  DSP HELPERS
-// ═══════════════════════════════════════════════
-
+// ── DSP helpers
 async function convolveOffline(sig, kernel, sr, outLen){
   const totalLen = sig.length + kernel.length - 1;
   const oac    = new OfflineAudioContext(1, totalLen, sr);
@@ -1143,8 +979,7 @@ async function convolveOffline(sig, kernel, sr, outLen){
   const kerBuf = oac.createBuffer(1, kernel.length, sr);
   kerBuf.getChannelData(0).set(kernel);
   const conv = oac.createConvolver();
-  conv.normalize = false;
-  conv.buffer    = kerBuf;
+  conv.normalize = false; conv.buffer = kerBuf;
   const src = oac.createBufferSource();
   src.buffer = sigBuf;
   src.connect(conv); conv.connect(oac.destination);
@@ -1155,19 +990,16 @@ async function convolveOffline(sig, kernel, sr, outLen){
 
 function computeFreqResponse(ir, sr){
   const curve = new Float32Array(NUM_BANDS+1);
-  for(let bi=0;bi<=NUM_BANDS;bi++){
-    curve[bi] = goertzelDB(ir, BANDS[bi], sr);
-  }
-  // Normalize to sensible range
+  for(let bi=0;bi<=NUM_BANDS;bi++) curve[bi] = goertzelDB(ir, BANDS[bi], sr);
   const maxV = Math.max(...curve);
   for(let i=0;i<=NUM_BANDS;i++) curve[i] -= maxV - DB_MAX + 10;
   return curve;
 }
 
 function goertzelDB(buf, freq, sr){
-  const N     = Math.min(buf.length, Math.ceil(sr*3));
-  const w     = 2*Math.PI*freq/sr;
-  const cosW  = Math.cos(w), sinW = Math.sin(w), coeff = 2*cosW;
+  const N    = Math.min(buf.length, Math.ceil(sr*3));
+  const w    = 2*Math.PI*freq/sr;
+  const cosW = Math.cos(w), sinW = Math.sin(w), coeff = 2*cosW;
   let s1=0, s2=0;
   for(let i=0;i<N;i++){ const s0=buf[i]+coeff*s1-s2; s2=s1; s1=s0; }
   const re = s1 - s2*cosW, im = s2*sinW;
@@ -1186,24 +1018,19 @@ function computeRT60(ir, sr){
 }
 
 function measureRT60atBand(ir, sr, fc){
-  // Bandpass around fc (1-octave), then Schroeder integration
   const filtered = bandpassFilter(ir, sr, fc/Math.SQRT2, fc*Math.SQRT2);
-  // Squared envelope
   const energy = filtered.map(v=>v*v);
-  // Find peak
   let peakIdx = 0;
   for(let i=1;i<energy.length;i++) if(energy[i]>energy[peakIdx]) peakIdx=i;
-  // Schroeder backwards integration from end
   const schroeder = new Float32Array(energy.length);
   schroeder[energy.length-1] = energy[energy.length-1];
   for(let i=energy.length-2;i>=0;i--) schroeder[i]=schroeder[i+1]+energy[i];
   const peakE = schroeder[peakIdx];
   if(peakE<=0) return 0.4;
-  // Find -5dB and -25dB (T20) relative to peak
   const t5  = findDecayTime(schroeder, peakIdx, sr, peakE, -5);
   const t25 = findDecayTime(schroeder, peakIdx, sr, peakE, -25);
   if(t5<0||t25<0||t25<=t5) return 0.4;
-  return (t25-t5)*3; // extrapolate to -60dB = RT60
+  return (t25-t5)*3;
 }
 
 function findDecayTime(schroeder, peakIdx, sr, peakE, dbTarget){
@@ -1215,11 +1042,10 @@ function findDecayTime(schroeder, peakIdx, sr, peakE, dbTarget){
 }
 
 function bandpassFilter(buf, sr, f_lo, f_hi){
-  // Simple IIR bandpass (2nd order Butterworth via biquad coefficients)
-  const f0   = Math.sqrt(f_lo*f_hi);
-  const bw   = f_hi-f_lo;
-  const w0   = 2*Math.PI*f0/sr;
-  const alpha= Math.sin(w0)*Math.sinh(Math.log(2)/2 * bw/sr * w0/Math.sin(w0));
+  const f0    = Math.sqrt(f_lo*f_hi);
+  const bw    = f_hi-f_lo;
+  const w0    = 2*Math.PI*f0/sr;
+  const alpha = Math.sin(w0)*Math.sinh(Math.log(2)/2 * bw/sr * w0/Math.sin(w0));
   const b0=alpha, b1=0, b2=-alpha;
   const a0=1+alpha, a1=-2*Math.cos(w0), a2=1-alpha;
   const out=new Float32Array(buf.length);
@@ -1227,16 +1053,12 @@ function bandpassFilter(buf, sr, f_lo, f_hi){
   for(let i=0;i<buf.length;i++){
     const x0=buf[i];
     const y0=(b0*x0+b1*x1+b2*x2-a1*y1-a2*y2)/a0;
-    out[i]=y0;
-    x2=x1;x1=x0;y2=y1;y1=y0;
+    out[i]=y0; x2=x1;x1=x0;y2=y1;y1=y0;
   }
   return out;
 }
 
-
-// ═══════════════════════════════════════════════
-//  LIVE CAPTURE ANIMATION
-// ═══════════════════════════════════════════════
+// ── Live capture animation
 function drawLiveCapture(){
   if(!analyser) return;
   const W=capCanvas.width, H=capCanvas.height;
@@ -1245,17 +1067,13 @@ function drawLiveCapture(){
   const buf=new Float32Array(analyser.frequencyBinCount);
   analyser.getFloatFrequencyData(buf);
   const binHz=SAMPLE_RATE/analyser.fftSize;
-
   capCtx.fillStyle='#FFFFFF'; capCtx.fillRect(0,0,W,H);
-  // Grid
   DB_GRID.forEach(db=>{
     const y=PAD.t+GH-((db-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(y<PAD.t||y>PAD.t+GH) return;
     capCtx.strokeStyle='rgba(0,0,0,0.07)'; capCtx.lineWidth=1;
     capCtx.beginPath(); capCtx.moveTo(PAD.l,y); capCtx.lineTo(PAD.l+GW,y); capCtx.stroke();
   });
-
-  // Curve
   capCtx.beginPath();
   let first=true;
   for(let bi=0;bi<=NUM_BANDS;bi++){
@@ -1269,13 +1087,10 @@ function drawLiveCapture(){
     const y=PAD.t+GH-((Math.max(DB_MIN,Math.min(DB_MAX,db))-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(first){capCtx.moveTo(x,y);first=false;}else capCtx.lineTo(x,y);
   }
-  capCtx.strokeStyle='#006B63'; capCtx.lineWidth=1.5;
-  capCtx.stroke();
+  capCtx.strokeStyle='#006B63'; capCtx.lineWidth=1.5; capCtx.stroke();
 }
 
-// ═══════════════════════════════════════════════
-//  RESULTS DRAWING
-// ═══════════════════════════════════════════════
+// ── Results drawing
 const PAD={l:52,r:10,t:22,b:40};
 
 function G(canvas){
@@ -1286,44 +1101,32 @@ function G(canvas){
 function drawGrid(ctx,canvas){
   const{W,H,GW,GH}=G(canvas);
   ctx.fillStyle='#FAFAFA'; ctx.fillRect(0,0,W,H);
-  // chart plot area background
   ctx.fillStyle='#FFFFFF'; ctx.fillRect(PAD.l,PAD.t,GW,GH);
-
-  // ── horizontal dB gridlines + labels ──
   DB_GRID.forEach(db=>{
     const y=PAD.t+GH-((db-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(y<PAD.t||y>PAD.t+GH) return;
-    ctx.strokeStyle='rgba(0,0,0,0.11)'; ctx.lineWidth=1;
-    ctx.setLineDash([3,3]);
+    ctx.strokeStyle='rgba(0,0,0,0.11)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
     ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(PAD.l+GW,y); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle='#3F4948'; ctx.font='bold 12px Roboto,sans-serif';
     ctx.textAlign='right'; ctx.fillText(db,PAD.l-7,y+4);
   });
-
-  // ── vertical Hz gridlines + labels ──
   OCT_LABELS.forEach(({hz,l})=>{
     const x=PAD.l+fToX(hz,GW);
     const maj=hz===100||hz===1000||hz===10000;
     ctx.strokeStyle=maj?'rgba(0,0,0,0.18)':'rgba(0,0,0,0.07)';
     ctx.lineWidth=maj?1:0.8;
-    if(!maj){ctx.setLineDash([2,3]);}
+    if(!maj) ctx.setLineDash([2,3]);
     ctx.beginPath(); ctx.moveTo(x,PAD.t); ctx.lineTo(x,PAD.t+GH); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle=maj?'#191C1C':'#6F7978';
     ctx.font=`${maj?'bold 13':'11'}px Roboto,sans-serif`;
     ctx.textAlign='center'; ctx.fillText(l,x,PAD.t+GH+16);
   });
-
-  // ── axis titles ──
   ctx.fillStyle='#6F7978'; ctx.font='11px Roboto,sans-serif';
-  // "dB" rotated on left
   ctx.save(); ctx.translate(11,PAD.t+GH/2); ctx.rotate(-Math.PI/2);
   ctx.textAlign='center'; ctx.fillText('dB',0,0); ctx.restore();
-  // "Hz" at bottom right
   ctx.textAlign='right'; ctx.fillText('Hz',PAD.l+GW,PAD.t+GH+30);
-
-  // ── border ──
   ctx.strokeStyle='rgba(0,0,0,0.22)'; ctx.lineWidth=1;
   ctx.strokeRect(PAD.l,PAD.t,GW,GH);
 }
@@ -1349,8 +1152,8 @@ function drawCurve(ctx,canvas,vals,color,fillAlpha,lw){
     if(i===0){ctx.moveTo(x,PAD.t+GH);ctx.lineTo(x,y);}else ctx.lineTo(x,y);
   });
   const lastX=PAD.l+fToX(BANDS[Math.min(vals.length-1,NUM_BANDS)],GW);
-  ctx.lineTo(lastX,PAD.t+GH);
-  ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+  ctx.lineTo(lastX,PAD.t+GH); ctx.closePath();
+  ctx.fillStyle=grad; ctx.fill();
   ctx.beginPath();
   vals.forEach((db,i)=>{
     if(i>NUM_BANDS) return;
@@ -1358,8 +1161,7 @@ function drawCurve(ctx,canvas,vals,color,fillAlpha,lw){
     const y=PAD.t+GH-((Math.max(DB_MIN,Math.min(DB_MAX,db))-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   });
-  ctx.strokeStyle=color; ctx.lineWidth=lw||1.5;
-  ctx.stroke();
+  ctx.strokeStyle=color; ctx.lineWidth=lw||1.5; ctx.stroke();
   ctx.restore();
 }
 
@@ -1371,23 +1173,19 @@ function smooth(vals,hw){
   });
 }
 
-// ─── Freq Response ───
+// ── Freq response chart
 const freqCanvas = document.getElementById('freq-canvas');
 const freqCtx    = freqCanvas.getContext('2d');
 
 function drawFreqResponse(){
   const card = document.getElementById('freq-canvas-card');
-  freqCanvas.width  = card.clientWidth;
-  freqCanvas.height = card.clientHeight;
+  freqCanvas.width=card.clientWidth; freqCanvas.height=card.clientHeight;
   if(!freqCurve) return;
   const sm = smooth(Array.from(freqCurve),10);
   smoothedFreqCurve = sm;
-
   drawGrid(freqCtx,freqCanvas);
 
-  // ── Harman target underlay ──
   const{GW,GH}=G(freqCanvas);
-  // compute reference: median of smoothed in 300 Hz–2 kHz
   const refBands=BANDS.map((f,i)=>({f,v:sm[i]})).filter(b=>b.f>=300&&b.f<=2000);
   const sorted=refBands.map(b=>b.v).sort((a,b)=>a-b);
   const refDB=sorted[Math.floor(sorted.length/2)]||DB_MIN;
@@ -1404,14 +1202,10 @@ function drawFreqResponse(){
     const y=PAD.t+GH-((Math.max(DB_MIN,Math.min(DB_MAX,db))-DB_MIN)/(DB_MAX-DB_MIN))*GH;
     if(i===0) freqCtx.moveTo(x,y); else freqCtx.lineTo(x,y);
   });
-  freqCtx.stroke();
-  freqCtx.setLineDash([]); freqCtx.restore();
+  freqCtx.stroke(); freqCtx.setLineDash([]); freqCtx.restore();
 
-  // ── Raw measurement (thin, subtle) ──
   drawCurve(freqCtx,freqCanvas,Array.from(freqCurve),'#006B63',0.08,1);
-  // ── Smoothed measurement (bold) ──
   drawCurve(freqCtx,freqCanvas,sm,'#006B63',0.18,2.5);
-
 }
 
 function freqCanvasPointer(clientX,clientY){
@@ -1421,23 +1215,19 @@ function freqCanvasPointer(clientX,clientY){
   const cx=(clientX-rect.left)*scaleX;
   const{GW,GH}=G(freqCanvas);
   if(cx<PAD.l||cx>PAD.l+GW) return;
-  const frac=(cx-PAD.l)/GW;
-  const hz=MIN_HZ*Math.pow(MAX_HZ/MIN_HZ,frac);
   let bestIdx=0,bestDist=Infinity;
   BANDS.forEach((f,i)=>{const d=Math.abs(fToX(f,GW)-(cx-PAD.l));if(d<bestDist){bestDist=d;bestIdx=i;}});
   const db=smoothedFreqCurve[bestIdx];
+  const hz=BANDS[bestIdx];
   drawFreqResponse();
-  // crosshair
   freqCtx.save();
   freqCtx.beginPath(); freqCtx.rect(PAD.l,PAD.t,GW,GH); freqCtx.clip();
   freqCtx.strokeStyle='rgba(0,0,0,0.3)'; freqCtx.lineWidth=1; freqCtx.setLineDash([4,3]);
   freqCtx.beginPath(); freqCtx.moveTo(cx,PAD.t); freqCtx.lineTo(cx,PAD.t+GH); freqCtx.stroke();
   freqCtx.setLineDash([]); freqCtx.restore();
-  // dot
   const dotY=PAD.t+GH-((Math.max(DB_MIN,Math.min(DB_MAX,db))-DB_MIN)/(DB_MAX-DB_MIN))*GH;
   freqCtx.beginPath(); freqCtx.arc(cx,dotY,4,0,Math.PI*2);
   freqCtx.fillStyle='#006B63'; freqCtx.fill();
-  // label box
   const hzStr=hz>=1000?(hz/1000).toFixed(hz>=10000?0:1)+'k':Math.round(hz)+'';
   const label=hzStr+' Hz   '+db.toFixed(1)+' dB';
   freqCtx.font='bold 12px Roboto,sans-serif';
@@ -1456,33 +1246,27 @@ freqCanvas.addEventListener('touchend',()=>drawFreqResponse());
 freqCanvas.addEventListener('mousemove',e=>freqCanvasPointer(e.clientX,e.clientY));
 freqCanvas.addEventListener('mouseleave',()=>drawFreqResponse());
 
-
-// ─── RT60 ───
-// Tier thresholds and colours — bottom of bar → top of bar
-const RT60_WELL_ABOVE = 0.75; // s — above this it's red
+// ── RT60 chart
+const RT60_WELL_ABOVE = 0.75;
 const RT60_TIERS = [
-  { lo: 0,               hi: IDEAL_RT60_LO,   color: 'rgba(100,200,148,0.82)' }, // light green  — below sweet
-  { lo: IDEAL_RT60_LO,   hi: IDEAL_RT60_HI,   color: 'rgba(0,108,78,0.88)'   }, // dark green   — ideal sweet zone
-  { lo: IDEAL_RT60_HI,   hi: RT60_WELL_ABOVE,  color: 'rgba(210,165,60,0.75)'  }, // mild amber   — above sweet
-  { lo: RT60_WELL_ABOVE,  hi: Infinity,        color: 'rgba(186,26,26,0.88)'  }, // red          — well above
+  { lo: 0,              hi: IDEAL_RT60_LO,  color: 'rgba(100,200,148,0.82)' },
+  { lo: IDEAL_RT60_LO,  hi: IDEAL_RT60_HI,  color: 'rgba(0,108,78,0.88)'   },
+  { lo: IDEAL_RT60_HI,  hi: RT60_WELL_ABOVE, color: 'rgba(210,165,60,0.75)' },
+  { lo: RT60_WELL_ABOVE, hi: Infinity,       color: 'rgba(186,26,26,0.88)'  },
 ];
 
 function drawRT60(){
   const container = document.getElementById('rt60-chart-container');
   container.innerHTML='';
   if(!rt60Values) return;
-
-  // Scale must always show at least through the well-above threshold so zone markers are visible
   const maxT = Math.max(...rt60Values.map(v=>v.t60), RT60_WELL_ABOVE * 1.1);
 
   rt60Values.forEach(({hz,t60})=>{
-    // Ideal zone stripe position (% from top of bar-area)
     const refPct_lo = (IDEAL_RT60_LO / maxT) * 100;
     const refPct_hi = (IDEAL_RT60_HI / maxT) * 100;
     const zoneTop   = 100 - refPct_hi;
     const zoneH     = refPct_hi - refPct_lo;
 
-    // Build segment list bottom → top
     const segs = [];
     for(const tier of RT60_TIERS){
       if(t60 <= tier.lo) break;
@@ -1492,8 +1276,6 @@ function drawRT60(){
       segs.push({ color: tier.color, pct: (contrib / maxT) * 100 });
     }
 
-    // flex-direction:column-reverse stacks first DOM child at the BOTTOM of the container.
-    // Render segs[0] (bottom tier) first → it sits at the visual bottom. ✓
     const segsHtml = segs.map(s =>
       `<div style="flex-shrink:0;width:100%;height:${s.pct.toFixed(2)}%;background:${s.color};"></div>`
     ).join('');
@@ -1514,7 +1296,7 @@ function drawRT60(){
   });
 }
 
-// ─── Insights ───
+// ── Insights
 function generateFreqInsights(curve){
   const container=document.getElementById('freq-insights');
   container.innerHTML='';
@@ -1526,30 +1308,30 @@ function generateFreqInsights(curve){
   for(let i=0;i<=NUM_BANDS;i++){
     if(BANDS[i]>20&&BANDS[i]<250&&sm[i]>bassMax){bassMax=sm[i];bassHz=BANDS[i];}
   }
-  const bassMid = sm.slice(0,Math.ceil(NUM_BANDS*0.4)).reduce((a,b)=>a+b,0)/Math.ceil(NUM_BANDS*0.4);
-  const trebleMid= sm.slice(Math.ceil(NUM_BANDS*0.7)).reduce((a,b)=>a+b,0)/sm.slice(Math.ceil(NUM_BANDS*0.7)).length;
+  const bassMid=sm.slice(0,Math.ceil(NUM_BANDS*0.4)).reduce((a,b)=>a+b,0)/Math.ceil(NUM_BANDS*0.4);
+  const trebleMid=sm.slice(Math.ceil(NUM_BANDS*0.7)).reduce((a,b)=>a+b,0)/sm.slice(Math.ceil(NUM_BANDS*0.7)).length;
 
   if(bassMax - bassMid > 6){
     cards.push({
-      level:'red',title:'Bass Buildup',
-      body:`${Math.round(bassHz)}Hz is ${(bassMax-bassMid).toFixed(1)}dB above average. Likely a room mode. Bass traps in corners will help.`
+      level:'red',title:'Bass Buildup Detected',
+      body:`${Math.round(bassHz)} Hz is ${(bassMax-bassMid).toFixed(1)} dB louder than average — that's a room mode. You're hearing bass "boom" that isn't in the recording. Bass traps in room corners will help absorb it.`
     });
   } else if(bassMax - bassMid > 3){
     cards.push({
-      level:'yellow',title:'Mild Bass Rise',
-      body:`Slight excess around ${Math.round(bassHz)}Hz (+${(bassMax-bassMid).toFixed(1)}dB). Common in small rooms — acceptable for most listening.`
+      level:'yellow',title:'Mild Bass Excess',
+      body:`Slight rise around ${Math.round(bassHz)} Hz (+${(bassMax-bassMid).toFixed(1)} dB). Common in smaller rooms. The EQ correction page can tame this.`
     });
   } else {
-    cards.push({level:'green',title:'Bass Response',body:'Bass region looks reasonably flat. No major room modes detected.'});
+    cards.push({level:'green',title:'Bass Looks Good',body:'No major bass peaks from room modes. Your low end is reasonably balanced.'});
   }
 
   const tilt = bassMid - trebleMid;
   if(tilt>10){
-    cards.push({level:'yellow',title:'High-Frequency Rolloff',body:`Treble is ${tilt.toFixed(0)}dB below bass average. Could indicate mic placement or room absorption. Move mic away from walls.`});
+    cards.push({level:'yellow',title:'High Frequencies Rolling Off',body:`Treble is ${tilt.toFixed(0)} dB quieter than the bass average. Could be room absorption, mic placement, or speaker angle. Try toeing speakers in more and re-measuring.`});
   } else if(tilt<-3){
-    cards.push({level:'yellow',title:'Bright Room',body:'More treble energy than low-end. Reflective surfaces (glass, bare walls) likely. Consider soft furnishings.'});
+    cards.push({level:'yellow',title:'Bright Room',body:'More treble than low end. Reflective surfaces (glass, bare walls, hard floors) are bouncing highs at you. A rug, curtains, or soft furnishings will help.'});
   } else {
-    cards.push({level:'green',title:'Tonal Balance',body:'Reasonable balance between low and high frequencies.'});
+    cards.push({level:'green',title:'Good Tonal Balance',body:'Low and high frequencies are reasonably balanced. Your room isn\'t dramatically coloring the sound.'});
   }
 
   cards.forEach(c=>{
@@ -1567,21 +1349,21 @@ function generateRT60Insights(){
   const avg=rt60Values.reduce((s,v)=>s+v.t60,0)/rt60Values.length;
   const cards=[];
   if(avg < 0.2){
-    cards.push({level:'yellow',title:'Very Dead Room',body:`Average RT60 ${avg.toFixed(2)}s is below 0.2s. Over-treated or very small. May sound unnatural for music.`});
+    cards.push({level:'yellow',title:'Very Dead Room',body:`RT60 ${avg.toFixed(2)}s is below 0.2s. The room is over-treated or very small. Music may sound unnaturally dry. Consider removing some absorption.`});
   } else if(avg < IDEAL_RT60_LO){
-    cards.push({level:'yellow',title:'Slightly Dead',body:`RT60 ${avg.toFixed(2)}s is below ideal (0.3–0.5s). Consider reducing absorption, especially broadband panels.`});
+    cards.push({level:'yellow',title:'Slightly Too Dry',body:`RT60 ${avg.toFixed(2)}s is just below the 0.3–0.5s sweet zone. Try reducing broadband absorption (thick panels, heavy curtains).`});
   } else if(avg <= IDEAL_RT60_HI){
-    cards.push({level:'green',title:'Good Decay Time',body:`Average RT60 ${avg.toFixed(2)}s is in the ideal range for a listening room (0.3–0.5s).`});
+    cards.push({level:'green',title:'Great Decay Time',body:`Average RT60 ${avg.toFixed(2)}s is right in the ideal range (0.3–0.5s). Music will sound natural and detailed here.`});
   } else if(avg < 0.8){
-    cards.push({level:'yellow',title:'Slightly Live',body:`RT60 ${avg.toFixed(2)}s is a bit long. Soft furnishings, rugs, or acoustic panels will help bring it down.`});
+    cards.push({level:'yellow',title:'Slightly Too Lively',body:`RT60 ${avg.toFixed(2)}s is a bit long — notes blur together slightly. A rug, acoustic panels, or heavy curtains will help.`});
   } else {
-    cards.push({level:'red',title:'Very Live Room',body:`RT60 ${avg.toFixed(2)}s is too long for accurate listening. Significant absorption needed — panels, heavy curtains, bookshelves.`});
+    cards.push({level:'red',title:'Room Is Too Live',body:`RT60 ${avg.toFixed(2)}s — sound is ringing too long, making bass muddy and detail hard to hear. Add panels on first reflection points, heavy curtains, a thick rug, and bookshelves filled with books.`});
   }
 
-  const bassRT = rt60Values.filter(v=>v.hz<=250).map(v=>v.t60);
-  const bassAvg= bassRT.reduce((s,v)=>s+v,0)/bassRT.length;
+  const bassRT=rt60Values.filter(v=>v.hz<=250).map(v=>v.t60);
+  const bassAvg=bassRT.reduce((s,v)=>s+v,0)/bassRT.length;
   if(bassAvg > avg*1.5){
-    cards.push({level:'red',title:'Bass Ringing',body:`Low frequencies decay ${((bassAvg/avg-1)*100).toFixed(0)}% longer than mids. Bass traps in room corners are strongly recommended.`});
+    cards.push({level:'red',title:'Bass Is Ringing',body:`Low frequencies decay ${((bassAvg/avg-1)*100).toFixed(0)}% longer than the midrange — classic "one-note bass." Floor-to-ceiling bass traps in room corners are the most effective fix.`});
   }
 
   cards.forEach(c=>{
@@ -1592,37 +1374,28 @@ function generateRT60Insights(){
   });
 }
 
-
-// ═══════════════════════════════════════════════
-//  NAVIGATION
-// ═══════════════════════════════════════════════
-document.getElementById('btn-goto-rt60').addEventListener('click',()=>{
-  showScreen('result-rt60');
-});
-
-document.getElementById('btn-rt60-back').addEventListener('click',()=>{
-  showScreen('result-freq');
-});
+// ── Navigation
+document.getElementById('btn-goto-rt60').addEventListener('click',()=>showScreen('result-rt60'));
+document.getElementById('btn-rt60-back').addEventListener('click',()=>showScreen('result-freq'));
+document.getElementById('btn-goto-correction').addEventListener('click',()=>showScreen('result-correction'));
+document.getElementById('btn-corr-back').addEventListener('click',()=>showScreen('result-rt60'));
 
 document.getElementById('btn-redo').addEventListener('click',()=>{
   freqCurve=null; rt60Values=null;
   if(micStream) micStream.getTracks().forEach(t=>t.stop());
   micStream=null; analyser=null; micSource=null;
   if(audioCtx){audioCtx.close();audioCtx=null;}
-  // Reset welcome screen state
   document.getElementById('btn-mic-req').classList.remove('hidden');
   document.getElementById('btn-start').classList.add('hidden');
   document.getElementById('spl-num').textContent='— dB';
   document.getElementById('spl-bar').style.width='0%';
-  document.getElementById('spl-status').textContent='Waiting for microphone permission';
+  document.getElementById('spl-status').textContent='Enable your mic to check noise level';
   document.getElementById('spl-status').style.color='var(--on-surface-variant)';
   document.getElementById('noise-warn').classList.remove('visible');
-  showScreen('welcome');
+  showScreen('setup-position');
 });
 
-// ═══════════════════════════════════════════════
-//  EXPORT HANDLERS
-// ═══════════════════════════════════════════════
+// ── Export handlers
 document.getElementById('btn-export-freq-png').addEventListener('click',()=>{
   if(!freqCurve) return;
   const a=document.createElement('a');
@@ -1638,70 +1411,39 @@ document.getElementById('btn-export-rt60-png').addEventListener('click',()=>{
   tc.fillStyle='#FFFFFF'; tc.fillRect(0,0,560,300);
   tc.fillStyle='#191C1C'; tc.font='bold 13px Roboto,sans-serif'; tc.textAlign='center';
   tc.fillText('RT60 per Octave Band',280,22);
-
   if(rt60Values){
     const CHART_TOP=38, CHART_H=220, CHART_BOT=CHART_TOP+CHART_H;
     const bw=560/rt60Values.length;
     const maxT=Math.max(...rt60Values.map(v=>v.t60), RT60_WELL_ABOVE*1.1);
-
-    // Ideal zone band
-    const zoneY_hi = CHART_TOP + CHART_H * (1 - IDEAL_RT60_HI/maxT);
-    const zoneY_lo = CHART_TOP + CHART_H * (1 - IDEAL_RT60_LO/maxT);
-    tc.fillStyle='rgba(0,107,99,0.10)';
-    tc.fillRect(0, zoneY_hi, 560, zoneY_lo - zoneY_hi);
-    tc.strokeStyle='rgba(0,107,99,0.50)'; tc.lineWidth=1.5;
-    tc.setLineDash([5,4]);
+    const zoneY_hi=CHART_TOP+CHART_H*(1-IDEAL_RT60_HI/maxT);
+    const zoneY_lo=CHART_TOP+CHART_H*(1-IDEAL_RT60_LO/maxT);
+    tc.fillStyle='rgba(0,107,99,0.10)'; tc.fillRect(0,zoneY_hi,560,zoneY_lo-zoneY_hi);
+    tc.strokeStyle='rgba(0,107,99,0.50)'; tc.lineWidth=1.5; tc.setLineDash([5,4]);
     tc.beginPath(); tc.moveTo(0,zoneY_hi); tc.lineTo(560,zoneY_hi); tc.stroke();
     tc.beginPath(); tc.moveTo(0,zoneY_lo); tc.lineTo(560,zoneY_lo); tc.stroke();
     tc.setLineDash([]);
-
-    // Tier colours (solid for PNG)
     const PNG_TIERS=[
       {lo:0,              hi:IDEAL_RT60_LO,  color:'rgba(100,200,148,0.85)'},
       {lo:IDEAL_RT60_LO,  hi:IDEAL_RT60_HI,  color:'rgba(0,108,78,0.90)'  },
-      {lo:IDEAL_RT60_HI,  hi:RT60_WELL_ABOVE, color:'rgba(210,165,60,0.78)'  },
+      {lo:IDEAL_RT60_HI,  hi:RT60_WELL_ABOVE, color:'rgba(210,165,60,0.78)'},
       {lo:RT60_WELL_ABOVE, hi:Infinity,       color:'rgba(186,26,26,0.90)' },
     ];
-
     rt60Values.forEach(({hz,t60},i)=>{
-      const x=i*bw+8; const w=bw-14;
-      let curY=CHART_BOT;
-
+      const x=i*bw+8; const w=bw-14; let curY=CHART_BOT;
       for(const tier of PNG_TIERS){
         if(t60<=tier.lo) break;
         const effectiveHi=tier.hi===Infinity?maxT*1.05:tier.hi;
         const contrib=Math.min(t60,effectiveHi)-tier.lo;
         if(contrib<=0) continue;
         const segH=(contrib/maxT)*CHART_H;
-        tc.fillStyle=tier.color;
-        tc.fillRect(x, curY-segH, w, segH);
-        curY-=segH;
+        tc.fillStyle=tier.color; tc.fillRect(x,curY-segH,w,segH); curY-=segH;
       }
-
-      // Value label above bar
       const barTopY=CHART_TOP+CHART_H*(1-t60/maxT);
       tc.fillStyle='#3F4948'; tc.font='10px Roboto,sans-serif'; tc.textAlign='center';
-      tc.fillText(t60+'s', x+w/2, barTopY-4);
-      // Hz label below
-      tc.fillText(hz>=1000?hz/1000+'k':hz, x+w/2, CHART_BOT+14);
-    });
-
-    // Legend
-    const LX=12, LY=CHART_BOT+28, LS=10, LG=120;
-    const legendItems=[
-      {color:'rgba(100,200,148,0.85)',label:'Below ideal'},
-      {color:'rgba(0,108,78,0.90)',   label:'Ideal (0.3–0.5s)'},
-      {color:'rgba(210,165,60,0.78)',  label:'Above ideal'},
-      {color:'rgba(186,26,26,0.90)',  label:'Well above (>1s)'},
-    ];
-    tc.font='10px Roboto,sans-serif'; tc.textAlign='left';
-    legendItems.forEach((li,idx)=>{
-      const lx=LX+idx*LG;
-      tc.fillStyle=li.color; tc.fillRect(lx,LY,LS,LS);
-      tc.fillStyle='#3F4948'; tc.fillText(li.label,lx+LS+4,LY+LS-1);
+      tc.fillText(t60+'s',x+w/2,barTopY-4);
+      tc.fillText(hz>=1000?hz/1000+'k':hz,x+w/2,CHART_BOT+14);
     });
   }
-
   const a=document.createElement('a');
   a.download=`room-rt60-${Date.now()}.png`;
   a.href=tmp.toDataURL('image/png');
@@ -1711,9 +1453,7 @@ document.getElementById('btn-export-rt60-png').addEventListener('click',()=>{
 document.getElementById('btn-export-csv').addEventListener('click',()=>{
   if(!freqCurve) return;
   let csv='frequency_hz,magnitude_db\n';
-  freqCurve.forEach((db,i)=>{
-    if(i<=NUM_BANDS) csv+=`${BANDS[i].toFixed(2)},${db.toFixed(2)}\n`;
-  });
+  freqCurve.forEach((db,i)=>{if(i<=NUM_BANDS) csv+=`${BANDS[i].toFixed(2)},${db.toFixed(2)}\n`;});
   if(rt60Values){
     csv+='\nband_hz,rt60_s\n';
     rt60Values.forEach(({hz,t60})=>csv+=`${hz},${t60}\n`);
@@ -1724,19 +1464,15 @@ document.getElementById('btn-export-csv').addEventListener('click',()=>{
   a.click();
 });
 
-// ═══════════════════════════════════════════════
-//  ROOM CORRECTION DSP
-// ═══════════════════════════════════════════════
-const CORR_LIMIT = 120; // Hz — correction applied only below this
-const CORR_TAPER = 100; // Hz — start fading out at this frequency
+// ── Room correction DSP
+const CORR_LIMIT = 120;
+const CORR_TAPER = 100;
 
 function corrRefDB(sm){
   const vals=BANDS.map((f,i)=>({f,v:sm[i]})).filter(b=>b.f>=300&&b.f<=2000).map(b=>b.v).sort((a,b)=>a-b);
   return vals[Math.floor(vals.length/2)]||DB_MIN;
 }
 
-// ── RBJ biquad filters (Audio EQ Cookbook) ──────────────────────────────────
-// Returns normalised [b0,b1,b2,a1,a2] (a0 divided out)
 function _peakCoeffs(fc,gainDB,Q){
   const w=2*Math.PI*fc/SAMPLE_RATE, A=Math.pow(10,gainDB/40);
   const alpha=Math.sin(w)/(2*Q), c=Math.cos(w), a0=1+alpha/A;
@@ -1745,14 +1481,13 @@ function _peakCoeffs(fc,gainDB,Q){
 function _lowShelfCoeffs(fc,gainDB){
   const w=2*Math.PI*fc/SAMPLE_RATE, A=Math.pow(10,gainDB/40);
   const c=Math.cos(w), s=Math.sin(w);
-  const alpha=s/2*Math.sqrt((A+1/A)*(1/0.7071-1)+2); // S=0.707 (Butterworth)
+  const alpha=s/2*Math.sqrt((A+1/A)*(1/0.7071-1)+2);
   const sa2=2*Math.sqrt(A)*alpha;
   const a0=(A+1)+(A-1)*c+sa2;
-  return[A*((A+1)-(A-1)*c+sa2)/a0, 2*A*((A-1)-(A+1)*c)/a0,
-         A*((A+1)-(A-1)*c-sa2)/a0, -2*((A-1)+(A+1)*c)/a0,
+  return[A*((A+1)-(A-1)*c+sa2)/a0,2*A*((A-1)-(A+1)*c)/a0,
+         A*((A+1)-(A-1)*c-sa2)/a0,-2*((A-1)+(A+1)*c)/a0,
          ((A+1)+(A-1)*c-sa2)/a0];
 }
-// Magnitude response in dB of a normalised biquad at frequency f
 function _biquadMagDB(f,b){
   const w=2*Math.PI*f/SAMPLE_RATE, c=Math.cos(w), s=Math.sin(w);
   const c2=Math.cos(2*w), s2=Math.sin(2*w);
@@ -1760,7 +1495,6 @@ function _biquadMagDB(f,b){
   const rD=1  +b[3]*c+b[4]*c2, iD=-(b[3]*s+b[4]*s2);
   return 10*Math.log10(Math.max((rN*rN+iN*iN)/(rD*rD+iD*iD),1e-30));
 }
-
 
 function computeCorrection(sm,refDB){
   const raw=BANDS.map((hz,i)=>{
@@ -1773,17 +1507,12 @@ function computeCorrection(sm,refDB){
   return smooth(raw,6);
 }
 
-// Sequential greedy PEQ design (REW-style multipass)
-// For each pass: find freq with max residual error, grid-search gain+Q
-// using real biquad magnitude math, subtract best filter, repeat.
 function computePEQBands(sm,refDB){
-  // Working set: 25–120 Hz with lighter smoothing (preserve real peaks)
   const target=smooth(Array.from(computeCorrection(sm,refDB)),8);
   const work=BANDS.reduce((a,f,i)=>{if(f>=25&&f<=CORR_LIMIT)a.push({f,i});return a;},[]);
   const residual=work.map(w=>target[w.i]);
 
   const Q_OPTS=[0.5,0.7,1.0,1.4,2.0,3.0,5.0,8.0];
-  // Candidate shelf corner frequencies to try when fc is in sub-bass region
   const SHELF_FC=[50,63,80,100];
 
   function mse(coeffsFn,...args){
@@ -1793,25 +1522,18 @@ function computePEQBands(sm,refDB){
 
   const filters=[];
   for(let n=0;n<5;n++){
-    // 1. Find worst-error frequency in working set
     let maxErr=0, maxWi=-1;
     residual.forEach((v,wi)=>{if(Math.abs(v)>maxErr){maxErr=Math.abs(v);maxWi=wi;}});
     if(maxWi<0||maxErr<1.5) break;
-
     const fc=work[maxWi].f;
     const approxG=Math.max(-15,Math.min(6,residual[maxWi]));
     const gLo=Math.max(-15,approxG-4), gHi=Math.min(6,approxG+4);
-
-    // 2. Grid-search: try Peak at fc, and (if fc≤55 Hz) Low Shelf at SHELF_FC candidates
     let best={type:'Peak',hz:fc,gain:approxG,q:2.0,err:Infinity};
-
     for(let g=gLo;g<=gHi+0.01;g+=0.5){
-      // Peak filters
       for(const q of Q_OPTS){
         const e=mse(_peakCoeffs,fc,g,q);
         if(e<best.err) best={type:'Peak',hz:fc,gain:g,q,err:e};
       }
-      // Low Shelf (only auditioned when problem is in sub-bass region)
       if(fc<=55){
         for(const sfc of SHELF_FC){
           const e=mse(_lowShelfCoeffs,sfc,g);
@@ -1819,21 +1541,16 @@ function computePEQBands(sm,refDB){
         }
       }
     }
-
-    // 3. Subtract the winning filter's response from the residual
     const c=best.type==='Low Shelf'
       ?_lowShelfCoeffs(best.hz,best.gain)
       :_peakCoeffs(best.hz,best.gain,best.q);
     work.forEach((w,wi)=>{residual[wi]-=_biquadMagDB(w.f,c);});
-
     filters.push({hz:Math.round(best.hz),gain:Math.round(best.gain*10)/10,
                   q:Math.round(best.q*10)/10,type:best.type});
   }
-
   return filters.sort((a,b)=>a.hz-b.hz);
 }
 
-// ─── Correction Chart ───
 const corrCanvas=document.getElementById('corr-canvas');
 const corrCtx=corrCanvas.getContext('2d');
 let peqBands=null;
@@ -1847,7 +1564,6 @@ function drawCorrectionChart(){
   const{GW,GH}=G(corrCanvas);
   const refDB=corrRefDB(sm);
 
-  // Harman target (dashed amber)
   corrCtx.save();
   corrCtx.beginPath(); corrCtx.rect(PAD.l,PAD.t,GW,GH); corrCtx.clip();
   corrCtx.setLineDash([7,5]);
@@ -1862,23 +1578,19 @@ function drawCorrectionChart(){
   });
   corrCtx.stroke(); corrCtx.setLineDash([]); corrCtx.restore();
 
-  // Predicted = measured + correction
   const corr=computeCorrection(sm,refDB);
   const predicted=Array.from(sm).map((v,i)=>v+corr[i]);
   drawCurve(corrCtx,corrCanvas,predicted,'#006B63',0.20,2.5);
 
-  // 120 Hz marker
   corrCtx.save();
   corrCtx.beginPath(); corrCtx.rect(PAD.l,PAD.t,GW,GH); corrCtx.clip();
   const x120=PAD.l+fToX(CORR_LIMIT,GW);
-  corrCtx.strokeStyle='rgba(186,26,26,0.35)'; corrCtx.lineWidth=1;
-  corrCtx.setLineDash([4,3]);
+  corrCtx.strokeStyle='rgba(186,26,26,0.35)'; corrCtx.lineWidth=1; corrCtx.setLineDash([4,3]);
   corrCtx.beginPath(); corrCtx.moveTo(x120,PAD.t); corrCtx.lineTo(x120,PAD.t+GH); corrCtx.stroke();
   corrCtx.setLineDash([]);
   corrCtx.font='10px Roboto,sans-serif'; corrCtx.fillStyle='rgba(186,26,26,0.5)';
   corrCtx.textAlign='left'; corrCtx.fillText('120 Hz',x120+3,PAD.t+12);
   corrCtx.restore();
-
 }
 
 function generatePEQList(){
@@ -1888,7 +1600,7 @@ function generatePEQList(){
   const refDB=corrRefDB(smoothedFreqCurve);
   peqBands=computePEQBands(smoothedFreqCurve,refDB);
   if(peqBands.length===0){
-    container.innerHTML='<div class="peq-note">No significant corrections needed below 120 Hz.</div>';
+    container.innerHTML='<div class="peq-note">No significant corrections needed below 120 Hz — your bass response is already close to ideal.</div>';
     return;
   }
   const tbl=document.createElement('table');
@@ -1907,15 +1619,6 @@ function generatePEQList(){
   container.appendChild(tbl);
 }
 
-// Navigation
-document.getElementById('btn-goto-correction').addEventListener('click',()=>{
-  showScreen('result-correction');
-});
-document.getElementById('btn-corr-back').addEventListener('click',()=>{
-  showScreen('result-rt60');
-});
-
-// Copy PEQ to clipboard
 document.getElementById('btn-copy-peq').addEventListener('click',()=>{
   if(!peqBands||peqBands.length===0) return;
   const lines=['Room Correction PEQ (Harman target, ≤120 Hz)',''];
@@ -1933,7 +1636,6 @@ document.getElementById('btn-copy-peq').addEventListener('click',()=>{
   }).catch(()=>alert(text));
 });
 
-// Export correction chart PNG
 document.getElementById('btn-export-corr-png').addEventListener('click',()=>{
   if(!smoothedFreqCurve) return;
   const a=document.createElement('a');
@@ -1942,26 +1644,17 @@ document.getElementById('btn-export-corr-png').addEventListener('click',()=>{
   a.click();
 });
 
-// ═══════════════════════════════════════════════
-//  WINDOW RESIZE
-// ═══════════════════════════════════════════════
 window.addEventListener('resize',()=>{
   if(currentScreen==='result-freq'){
     const card=document.getElementById('freq-canvas-card');
-    freqCanvas.width=card.clientWidth;
-    freqCanvas.height=card.clientHeight;
+    freqCanvas.width=card.clientWidth; freqCanvas.height=card.clientHeight;
     drawFreqResponse();
   }
-  if(currentScreen==='result-rt60'){
-    drawRT60();
-  }
-  if(currentScreen==='result-correction'){
-    drawCorrectionChart();
-  }
+  if(currentScreen==='result-rt60') drawRT60();
+  if(currentScreen==='result-correction') drawCorrectionChart();
   if(currentScreen==='capture'){
     const cc=document.getElementById('capture-canvas');
-    cc.width=cc.parentElement.clientWidth;
-    cc.height=cc.parentElement.clientHeight;
+    cc.width=cc.parentElement.clientWidth; cc.height=cc.parentElement.clientHeight;
   }
 });
 </script>
