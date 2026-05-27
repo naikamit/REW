@@ -983,7 +983,7 @@ async function startMeasurement(){
   const sweepBuf      = generateSweep(ac, sweepDur, MIN_HZ, MAX_HZ);
   const invBuf        = generateInverseFilter(ac, sweepDur, MIN_HZ, MAX_HZ);
   const silencePre    = 0.5;
-  const silencePost   = 1.5;
+  const silencePost   = 4.0;  // needs to be long enough to capture room decay (RT60 can be >1s)
   const totalPerSweep = silencePre + sweepDur + silencePost;
 
   // Capture raw PCM via ScriptProcessorNode — bypasses Opus/codec high-pass filtering
@@ -1090,7 +1090,7 @@ async function startMeasurement(){
     if(seg.length < irLen) continue;
     document.getElementById('proc-step').textContent=`Deconvolving sweep ${sw+1}/${NUM_SWEEPS}…`;
     await new Promise(r=>setTimeout(r,30));
-    const ir = await convolveOffline(seg, inv, sr, irLen);
+    const ir = await convolveOffline(seg, inv, sr, irLen, irLen-1);
     for(let i=0;i<irLen;i++) avgIR[i]+=ir[i];
     valid++;
     document.getElementById('proc-progress').style.width=(35+valid*10)+'%';
@@ -1114,7 +1114,10 @@ async function startMeasurement(){
 }
 
 // ── DSP helpers
-async function convolveOffline(sig, kernel, sr, outLen){
+// peakOffset: where in the full convolution output to start reading.
+// For IR extraction, pass kernel.length-1 so the window starts at the direct-sound
+// peak rather than in the pre-ringing region that precedes it.
+async function convolveOffline(sig, kernel, sr, outLen, peakOffset=0){
   const totalLen = sig.length + kernel.length - 1;
   const oac    = new OfflineAudioContext(1, totalLen, sr);
   const sigBuf = oac.createBuffer(1, sig.length, sr);
@@ -1128,7 +1131,7 @@ async function convolveOffline(sig, kernel, sr, outLen){
   src.connect(conv); conv.connect(oac.destination);
   src.start(0);
   const rendered = await oac.startRendering();
-  return rendered.getChannelData(0).slice(0, outLen);
+  return rendered.getChannelData(0).slice(peakOffset, peakOffset + outLen);
 }
 
 function computeFreqResponse(ir, sr){
