@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <meta name="color-scheme" content="dark"/>
 <meta name="theme-color" content="#0F1416"/>
 <title>Room Analyzer</title>
@@ -12,7 +12,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{color-scheme:light;}
-html,body{height:100%;overflow:hidden;}
+html,body{height:100%;height:100dvh;overflow:hidden;}
 
 :root{
   --bg:#F4FAF9;
@@ -41,6 +41,7 @@ body{
   font-family:'Roboto',sans-serif;
   color:var(--on-surface);
   height:100vh;
+  height:100dvh;
   display:flex;
   flex-direction:column;
   overflow:hidden;
